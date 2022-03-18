@@ -48,9 +48,12 @@ public:
     void abort(){m_galilController->abort();}
     
     /** Motor Control shortcuts */
-    void allMotorsOn () const { bool axes[] = {true, true, true, true}; motorsOn (axes); }
-    void allMotorsOff() const { bool axes[] = {true, true, true, true}; motorsOff(axes); }
+    void allMotorsOn () { bool axes[ROBOT_NUM_AXES] = {true, true, true, true}; motorsOn (axes); }
+    void allMotorsOff() { bool axes[ROBOT_NUM_AXES] = {true, true, true, true}; motorsOff(axes); }
     
+    /** Get whether the motors are on or not */
+    const bool* getMotorsOn() const { return m_activeAxes; }
+
     /** Get motor position commands
         @param axes boolean array of which axes that would like to be queried
         @param absolute (default=false) whether to use absolute positioning or not
@@ -63,8 +66,8 @@ public:
     float getPositionLS(const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, false, true,  false}; return getPosition(axes, absolute)[3]; }
     
     // turn on/off the motors
-    void motorsOn (const bool axes[ROBOT_NUM_AXES]) const;
-    void motorsOff(const bool axes[ROBOT_NUM_AXES]) const;
+    void motorsOn (const bool axes[ROBOT_NUM_AXES]);
+    void motorsOff(const bool axes[ROBOT_NUM_AXES]);
     
     /**
      Move the axes
@@ -123,6 +126,7 @@ public: // static defaults
     
 private: // private members
     std::shared_ptr<GalilController> m_galilController;
+    bool m_activeAxes[ROBOT_NUM_AXES] = {false, false, false, false};
     
 // private members
 protected:

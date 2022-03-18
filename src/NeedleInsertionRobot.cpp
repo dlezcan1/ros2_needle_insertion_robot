@@ -26,6 +26,9 @@ NeedleInsertionRobot::NeedleInsertionRobot()
 
 NeedleInsertionRobot::NeedleInsertionRobot(GCStringIn ipAddress) : m_galilController(std::make_shared<GalilController>(ipAddress))
 {
+    // turn off all motors
+    allMotorsOff();
+    
     // Set speed controls
     setSpeed(s_default_speed);
     setAcceleration(s_default_acceleration);
@@ -57,19 +60,27 @@ float* NeedleInsertionRobot::getPosition(const bool axes[ROBOT_NUM_AXES], const 
     
 } // NeedleInsertionRobot::getPosition
 
-void NeedleInsertionRobot::motorsOn(const bool axes[ROBOT_NUM_AXES]) const
+void NeedleInsertionRobot::motorsOn(const bool axes[ROBOT_NUM_AXES])
 {
     bool* gc_axes = robotToGalilAxes(axes);
     
     m_galilController->motorsOn(gc_axes);
+
+    // copy over the motor axes
+    for(int i = 0; i < ROBOT_NUM_AXES; i++)
+        m_activeAxes[i] = axes[i];
     
 } // NeedleInsertionRobot::motorsOn
 
-void NeedleInsertionRobot::motorsOff(const bool axes[ROBOT_NUM_AXES]) const
+void NeedleInsertionRobot::motorsOff(const bool axes[ROBOT_NUM_AXES])
 {
     bool* gc_axes = robotToGalilAxes(axes);
     
     m_galilController->motorsOff(gc_axes);
+
+    // copy over the motor axes
+    for(int i = 0; i < ROBOT_NUM_AXES; i++)
+        m_activeAxes[i] = axes[i];
     
 } // NeedleInsertionRobot::motorsOff
 
@@ -80,6 +91,11 @@ void NeedleInsertionRobot::moveAxesAbsolute(const float axes[ROBOT_NUM_AXES]) co
     // convert distance measurements to counts
     long* counts_axes = distanceToCounts(axes);
     
+    // remove any axes that don't move
+    for(int i = 0; i < ROBOT_NUM_AXES; i++)
+        if (!m_activeAxes[i]) // if axis is not turned on
+            counts_axes[i] = NULL_LONG_AXIS; // null the axis
+
     // convert to galil controller axes
     long* gc_axes = robotToGalilAxes(counts_axes);
     
@@ -93,6 +109,11 @@ void NeedleInsertionRobot::moveAxesRelative(const float axes[ROBOT_NUM_AXES]) co
 {
     // convert distance measurements to counts
     long* counts_axes = distanceToCounts(axes);
+
+    // remove any axes that don't move
+    for(int i = 0; i < ROBOT_NUM_AXES; i++)
+        if (!m_activeAxes[i]) // if axis is not turned on
+            counts_axes[i] = NULL_LONG_AXIS; // null the axis
     
     // convert to galil controller axes
     long* gc_axes = robotToGalilAxes(counts_axes);

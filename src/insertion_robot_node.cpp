@@ -31,20 +31,19 @@ public:
         RCLCPP_INFO(this->get_logger(), "Connection established.");
         
         // initalize subscribers
-        m_subAxesX  = this->create_subscription<AxisMsg_t>("/stage/command/axis/x",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
-        m_subAxesY  = this->create_subscription<AxisMsg_t>("/stage/command/axis/y",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
-        m_subAxesZ  = this->create_subscription<AxisMsg_t>("/stage/command/axis/z",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
-        m_subAxesLS = this->create_subscription<AxisMsg_t>("/stage/command/axis/linear_stage", 10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
+        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("stage/command/axis/x",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
+        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("stage/command/axis/y",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
+        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("stage/command/axis/z",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
+        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("stage/command/axis/linear_stage", 10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
         
         // initalize publishers
-        m_pubAxesX  = this->create_publisher<AxisMsg_t>("/stage/state/axis/x",            10);
-        m_pubAxesY  = this->create_publisher<AxisMsg_t>("/stage/state/axis/y",            10);
-        m_pubAxesZ  = this->create_publisher<AxisMsg_t>("/stage/state/axis/z",            10);
-        m_pubAxesLS = this->create_publisher<AxisMsg_t>("/stage/state/axis/linear_stage", 10);
+        m_pub_AxStateX  = this->create_publisher<AxisMsg_t>("stage/state/axis/x",            10);
+        m_pub_AxStateY  = this->create_publisher<AxisMsg_t>("stage/state/axis/y",            10);
+        m_pub_AxStateZ  = this->create_publisher<AxisMsg_t>("stage/state/axis/z",            10);
+        m_pub_AxStateLS = this->create_publisher<AxisMsg_t>("stage/state/axis/linear_stage", 10);
         
         // create timers
-//        m_timer = this->create_wall_timer( 1000ms, [this](){ RCLCPP_INFO(this->get_logger(), "Running..."); } );
-        m_timer = this->create_wall_timer( 1000ms, ROBOT_BIND_PUBLISHER(publish_CurrentState) );
+        m_stateTimer = this->create_wall_timer( 1000ms, ROBOT_BIND_PUBLISHER(publish_CurrentState) );
         
         
     } // Constructor
@@ -53,16 +52,19 @@ public:
         RCLCPP_INFO(this->get_logger(), "Shutting down robot node: '%s'", this->get_name());
         
         // release subscriptions
-        m_subAxesX.reset();
-        m_subAxesY.reset();
-        m_subAxesZ.reset();
-        m_subAxesLS.reset();
+        m_sub_AxCommandX.reset();
+        m_sub_AxCommandY.reset();
+        m_sub_AxCommandZ.reset();
+        m_sub_AxCommandLS.reset();
         
         // release publishers
-        m_pubAxesX.reset();
-        m_pubAxesY.reset();
-        m_pubAxesZ.reset();
-        m_pubAxesLS.reset();
+        m_pub_AxStateX.reset();
+        m_pub_AxStateY.reset();
+        m_pub_AxStateZ.reset();
+        m_pub_AxStateLS.reset();
+
+        // release timers
+        m_stateTimer.reset();
         
         // release robot pointer
 //        m_robot.reset();
@@ -70,17 +72,12 @@ public:
 
 private:
     /* Subscriber callbakcs*/
-    void topic_callbackString(const std_msgs::msg::String::SharedPtr msg) const
-    {
-      RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
-    }
-    
     void topic_callbackAxisCommand(int axis, const AxisMsg_t::SharedPtr msg) const
     {
         std::string axisName;
         
         // TODO: perform command to specified axis
-        
+        float command_positions[ROBOT_NUM_AXES] = {NULL_FLOAT_AXIS, NULL_FLOAT_AXIS, NULL_FLOAT_AXIS, NULL_FLOAT_AXIS};
         switch(axis)
         {
             case 0: // axis X
@@ -100,13 +97,15 @@ private:
                 break;
                 
             default:
-                axisName = "Not Found";
+                return;
                 
         } // switch
         
         float cmd_pos = msg->data;
-        RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for '%.2f' mm", axisName.c_str(), cmd_pos);
-        
+        RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for %.2f mm", axisName.c_str(), cmd_pos);
+        command_positions[axis] = cmd_pos;
+
+        m_robot->moveAxes(command_positions, false);
         
     } // topic_callbackAxisCommand
     
@@ -119,30 +118,38 @@ private:
         auto msg_ls = std_msgs::msg::Float32();
 
         // TODO: sample robot coordinates
-        msg_x.data  = 0;
-        msg_y.data  = 0;
-        msg_z.data  = 0;
-        msg_ls.data = 0;
+        float* positions = m_robot->getPosition(m_robotAxes, false);
+        msg_x.data  = positions[0];
+        msg_y.data  = positions[1];
+        msg_z.data  = positions[2];
+        msg_ls.data = positions[3];
 
         // publish
-        m_pubAxesX -> publish(msg_x);
-        m_pubAxesY -> publish(msg_y);
-        m_pubAxesZ -> publish(msg_z);
-        m_pubAxesLS-> publish(msg_ls);
+        m_pub_AxStateX  -> publish(msg_x);
+        m_pub_AxStateY  -> publish(msg_y);
+        m_pub_AxStateZ  -> publish(msg_z);
+        m_pub_AxStateLS -> publish(msg_ls);
       
         
     } // publish_CurrentState
     
 private: // members
     std::shared_ptr<NeedleInsertionRobot> m_robot;
+    const bool m_robotAxes[4] = {true, true, true, true};
     
     // timers
-    rclcpp::TimerBase::SharedPtr m_timer;
+    rclcpp::TimerBase::SharedPtr m_stateTimer;
     
     // subscribers
-    rclcpp::Subscription<AxisMsg_t>::SharedPtr m_subAxesX, m_subAxesY, m_subAxesZ, m_subAxesLS;
+    rclcpp::Subscription<AxisMsg_t>::SharedPtr m_sub_AxCommandX, 
+                                               m_sub_AxCommandY,
+                                               m_sub_AxCommandZ, 
+                                               m_sub_AxCommandLS;
     
-    rclcpp::Publisher<AxisMsg_t>::SharedPtr m_pubAxesX, m_pubAxesY, m_pubAxesZ, m_pubAxesLS;
+    rclcpp::Publisher<AxisMsg_t>::SharedPtr m_pub_AxStateX, 
+                                            m_pub_AxStateY, 
+                                            m_pub_AxStateZ, 
+                                            m_pub_AxStateLS;
     
 }; // class: NeedleInsertionRobotNode
 

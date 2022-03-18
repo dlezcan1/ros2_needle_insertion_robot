@@ -29,7 +29,7 @@ GCStringOut GalilController::bufferToGCStringOut(char* buffer, unsigned int buff
 
 GCStringOut GalilController::command(GCStringIn command) 
 {
-    std::cout << "Galil Command: " << command << std::endl;
+    std::cout << "Galil Command: " << command << std::endl; // display galil commands
     e(GCmdT(m_gc, command, m_buffer, GALIL_BUFFER_SIZE, NULL)); // trimmed version
     // this->e(GCommand(m_gc, command, m_buffer, G_SMALL_BUFFER, &m_bytesRead)); // full version
     
@@ -99,16 +99,27 @@ GReturn GalilController::moveAxesAbsolute(long axes[GALIL_NUM_AXES])
     // format the command message
     std::string command = "PA " + commaSeparateValues(std::vector<long>(axes, axes + GALIL_NUM_AXES));
     std::string bg_command = "BG ";
+    bool any_axes_on = false;
     for (int i = 0; i < GALIL_NUM_AXES; i++)
     {
         //        command += std::to_string(axes[i]) + (i < GALIL_NUM_AXES - 1 ? ",": "");
+        if (isNullAxis(axes[i]))
+            continue;
+        
+        else
+            any_axes_on = true;
+        
         bg_command += axisName(i); // TODO: need to change to detect absolute changes
         
     } // for
     
-    this->command(command); // send the move command
-    this->command(bg_command); // send the begin command
-    
+    // check if any axes were moved
+    if (any_axes_on)
+    {
+        this->command(command); // send the move command
+        this->command(bg_command); // send the begin command
+    } // if
+
     return 0;
     
 } // GalilController::moveAxesAbsolute
@@ -118,16 +129,27 @@ GReturn GalilController::moveAxesRelative(long axes[GALIL_NUM_AXES])
     // format the command message
     std::string mv_command = "PR " + commaSeparateValues(std::vector<long>(axes, axes + GALIL_NUM_AXES));
     std::string bg_command = "BG ";
+    bool any_axes_on = false;
     for (int i = 0; i < GALIL_NUM_AXES; i++)
     {
         //        mv_command += std::to_string(axes[i]) + (i < GALIL_NUM_AXES - 1 ? ",": "");
-        if (axes[i] != 0)
-            bg_command += axisName(i);
+        if (axes[i] == 0 || isNullAxis(axes[i]))
+            continue;
         
+        else
+        {
+            any_axes_on = true;
+            bg_command += axisName(i);
+
+        } // else
     } // for
-    
-    this->command(mv_command); // send the move command
-    this->command(bg_command); // send the begin command
+
+    // check if any axes were moved
+    if (any_axes_on)
+    {
+        this->command(mv_command); // send the move command
+        this->command(bg_command); // send the begin command
+    } // if
     
     return 0;
     
