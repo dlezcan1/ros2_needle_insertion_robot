@@ -1,6 +1,7 @@
 #include "GalilController.h"
 
 #include <algorithm>
+#include <iostream>
 
 
 GalilController::GalilController(GCStringIn ipAddress)
@@ -28,6 +29,7 @@ GCStringOut GalilController::bufferToGCStringOut(char* buffer, unsigned int buff
 
 GCStringOut GalilController::command(GCStringIn command) 
 {
+    std::cout << "Galil Command: " << command << std::endl;
     e(GCmdT(m_gc, command, m_buffer, GALIL_BUFFER_SIZE, NULL)); // trimmed version
     // this->e(GCommand(m_gc, command, m_buffer, G_SMALL_BUFFER, &m_bytesRead)); // full version
     

@@ -23,8 +23,8 @@ std::string commaSeparateValues(std::vector<T> values)
 {
     std::string csv = "";
     for (int i = 0; i < values.size(); i++)
-        csv += std::to_string(values[i]) +
-        ((i < values.size() - 1) && !isNullAxis(values[i]) ? "," : "");
+        csv += (!isNullAxis(values[i]) ? std::to_string(values[i]) : "") +
+            ((i < values.size() - 1) ? "," : "");
     
     return csv;
     
@@ -35,8 +35,8 @@ std::string commaSeparateValues(std::array<T, N> values)
 {
     std::string csv = "";
     for (int i = 0; i < values.size(); i++)
-        csv += std::to_string(values[i]) +
-        ((i < values.size() - 1) && !isNullAxis(values[i]) ? "," : "");
+        csv += (!isNullAxis(values[i]) ? std::to_string(values[i]) : "") +
+            ((i < values.size() - 1) ? "," : "");
     
     return csv;
     

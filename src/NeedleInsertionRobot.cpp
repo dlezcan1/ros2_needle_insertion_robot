@@ -6,6 +6,7 @@
 //
 
 #include "NeedleInsertionRobot.h"
+#include <iostream>
 
 /* Static Value References */
 const float NeedleInsertionRobot::s_default_speed[ROBOT_NUM_AXES];
@@ -23,7 +24,7 @@ NeedleInsertionRobot::NeedleInsertionRobot()
     
 } // default constructor
 
-NeedleInsertionRobot::NeedleInsertionRobot(GCStringIn ipAddress) : m_galilController(new GalilController(ipAddress))
+NeedleInsertionRobot::NeedleInsertionRobot(GCStringIn ipAddress) : m_galilController(std::make_shared<GalilController>(ipAddress))
 {
     // Set speed controls
     setSpeed(s_default_speed);

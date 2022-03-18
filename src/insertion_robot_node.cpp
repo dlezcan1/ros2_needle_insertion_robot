@@ -22,12 +22,13 @@ public:
     : Node(name)
     {
         // declare parameters
-        
         std::string ip_address = this->declare_parameter("robot.ipAddress", DEFAULT_GALIL_IP); // IP address of the robot
-        RCLCPP_INFO(this->get_logger(), "Galil IP address: %s", ip_address.c_str());
-
+        
         // initialize the robot
-//        m_robot = std::make_shared<NeedleInsertionRobot>(ip_address.c_str());
+        RCLCPP_INFO(this->get_logger(), "Connecting to Robot at IP Address: %s", ip_address.c_str());
+        m_robot = std::make_shared<NeedleInsertionRobot>(ip_address.c_str());
+        m_robot->allMotorsOff();
+        RCLCPP_INFO(this->get_logger(), "Connection established.");
         
         // initalize subscribers
         m_subAxesX  = this->create_subscription<AxisMsg_t>("/stage/command/axis/x",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
@@ -112,21 +113,28 @@ private:
     /* Publisher functions */
     void publish_CurrentState()
     {
-        auto msg = std_msgs::msg::Float32();
-        
+        auto msg_x  = std_msgs::msg::Float32();
+        auto msg_y  = std_msgs::msg::Float32();
+        auto msg_z  = std_msgs::msg::Float32();
+        auto msg_ls = std_msgs::msg::Float32();
+
         // TODO: sample robot coordinates
-        msg.data = 0;
-        m_pubAxesX->publish(msg);
-        m_pubAxesY->publish(msg);
-        m_pubAxesZ->publish(msg);
-        m_pubAxesLS->publish(msg);
-        
+        msg_x.data  = 0;
+        msg_y.data  = 0;
+        msg_z.data  = 0;
+        msg_ls.data = 0;
+
+        // publish
+        m_pubAxesX -> publish(msg_x);
+        m_pubAxesY -> publish(msg_y);
+        m_pubAxesZ -> publish(msg_z);
+        m_pubAxesLS-> publish(msg_ls);
+      
         
     } // publish_CurrentState
     
 private: // members
-//    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr m_subString;
-//    std::shared_ptr<NeedleInsertionRobot> m_robot;
+    std::shared_ptr<NeedleInsertionRobot> m_robot;
     
     // timers
     rclcpp::TimerBase::SharedPtr m_timer;

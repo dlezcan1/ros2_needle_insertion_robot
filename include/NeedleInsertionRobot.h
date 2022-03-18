@@ -15,7 +15,7 @@
 
 // NULL AXES operations
 const float NULL_FLOAT_AXIS = std::numeric_limits<float>::lowest();
-inline static bool isNullAxis(float axis){return axis == NULL_FLOAT_AXIS; }
+inline static bool isNullAxis(float axis){ return axis == NULL_FLOAT_AXIS; }
 
 class NeedleInsertionRobot
 {
@@ -48,8 +48,8 @@ public:
     void abort(){m_galilController->abort();}
     
     /** Motor Control shortcuts */
-    void allMotorsOn () const { motorsOn (s_axes); }
-    void allMotorsOff() const { motorsOff(s_axes); }
+    void allMotorsOn () const { bool axes[] = {true, true, true, true}; motorsOn (axes); }
+    void allMotorsOff() const { bool axes[] = {true, true, true, true}; motorsOff(axes); }
     
     /** Get motor position commands
         @param axes boolean array of which axes that would like to be queried
