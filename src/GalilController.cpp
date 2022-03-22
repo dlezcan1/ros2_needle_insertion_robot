@@ -34,6 +34,7 @@ GCStringOut GalilController::command(GCStringIn command)
     // this->e(GCommand(m_gc, command, m_buffer, G_SMALL_BUFFER, &m_bytesRead)); // full version
     
     GCStringOut response = bufferToGCStringOut(m_buffer, GALIL_BUFFER_SIZE); // get the response
+    // std::cout << "Galil Response: " << response << std::endl; // display galil response messages
     flushBuffer(); // flush the buffer
     
     return response;
@@ -160,9 +161,9 @@ long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
     // prepare the command
     std::string command = "";
     if (absolute)
-        command += "PA ";
+        command = "PA ";
     else
-        command += "PR ";
+        command = "PR ";
     
     for (int i = 0; i < GALIL_NUM_AXES; i++)
     {
@@ -216,8 +217,9 @@ long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
     
     while((pos = s_response.find(",")) != std::string::npos)
     {
+        // std::cout << "GalilContoller::getPosition: s_response = " << s_response <<  " | counter = " << counter << std::endl;
         token = s_response.substr(0, pos);
-        bool isnumeric = token.find_first_not_of("0123456789 ") == std::string::npos;
+        bool isnumeric = token.find_first_not_of("-0123456789 ") == std::string::npos;
 
         if (isnumeric)
         {
@@ -232,8 +234,15 @@ long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
         } // if
 
         s_response.erase(0, pos + 1); // remove the processed part of string
+        
 
     } // while
+
+    // std::cout << "GalilController::getPositions return = " << positions[0]
+    //                                                 << "," << positions[1]
+    //                                                 << "," << positions[2]
+    //                                                 << "," << positions[3]
+    //                                                 << "," << positions[4] << std::endl;
 
     return positions;
 

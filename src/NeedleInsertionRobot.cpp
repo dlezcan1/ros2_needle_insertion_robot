@@ -50,7 +50,7 @@ NeedleInsertionRobot::~NeedleInsertionRobot()
 float* NeedleInsertionRobot::getPosition(const bool axes[ROBOT_NUM_AXES], const bool absolute) const
 {
     bool* gc_axes = robotToGalilAxes(axes);
-    long* gc_counts = m_galilController->getPosition(gc_axes); // get encoder counts
+    long* gc_counts = m_galilController->getPosition(gc_axes, absolute); // get encoder counts
 
     long* counts = galilToRobotAxes(gc_counts); // convert to Robot axes mappings
     float* positions = countsToDistance(counts); // convert encoder counts to robot positions
@@ -68,7 +68,8 @@ void NeedleInsertionRobot::motorsOn(const bool axes[ROBOT_NUM_AXES])
 
     // copy over the motor axes
     for(int i = 0; i < ROBOT_NUM_AXES; i++)
-        m_activeAxes[i] = axes[i];
+        if (axes[i])
+            m_activeAxes[i] = true;
     
 } // NeedleInsertionRobot::motorsOn
 
@@ -80,7 +81,8 @@ void NeedleInsertionRobot::motorsOff(const bool axes[ROBOT_NUM_AXES])
 
     // copy over the motor axes
     for(int i = 0; i < ROBOT_NUM_AXES; i++)
-        m_activeAxes[i] = axes[i];
+        if (axes[i])
+            m_activeAxes[i] = false;
     
 } // NeedleInsertionRobot::motorsOff
 
