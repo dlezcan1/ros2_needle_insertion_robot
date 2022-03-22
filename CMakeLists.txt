@@ -25,7 +25,7 @@ find_package(std_srvs REQUIRED)
 find_package(rcl_interfaces REQUIRED)
 
 # setup custom libraries
-link_directories(lib)
+link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 # setup node executable
 add_executable(insertion_robot_node src/insertion_robot_node.cpp src/NeedleInsertionRobot.cpp src/GalilController.cpp)
