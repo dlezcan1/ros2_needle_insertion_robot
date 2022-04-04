@@ -41,14 +41,14 @@ public:
         // initialize the robot
         RCLCPP_INFO(this->get_logger(), "Connecting to Robot at IP Address: %s", ip_address.c_str());
         m_robot = std::make_shared<NeedleInsertionRobot>(ip_address.c_str());
-        m_robot->allMotorsOff();
         RCLCPP_INFO(this->get_logger(), "Connection established.");
+        m_robot->allMotorsOff();
         
         // initalize subscribers
-        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("stage/command/axis/x",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
-        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("stage/command/axis/y",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
-        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("stage/command/axis/z",            10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
-        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("stage/command/axis/linear_stage", 10, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
+        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("stage/command/axis/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
+        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("stage/command/axis/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
+        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("stage/command/axis/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
+        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("stage/command/axis/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
         
         // initalize publishers
         m_pub_AxStateX  = this->create_publisher<AxisMsg_t>("stage/state/axis/x",            10);
@@ -78,23 +78,7 @@ public:
     {
         RCLCPP_INFO(this->get_logger(), "Shutting down robot node: '%s'", this->get_name());
         
-        // release subscriptions
-        m_sub_AxCommandX.reset();
-        m_sub_AxCommandY.reset();
-        m_sub_AxCommandZ.reset();
-        m_sub_AxCommandLS.reset();
-        
-        // release publishers
-        m_pub_AxStateX.reset();
-        m_pub_AxStateY.reset();
-        m_pub_AxStateZ.reset();
-        m_pub_AxStateLS.reset();
-
-        // release timers
-        m_stateTimer.reset();
-        
-        // release robot pointer
-//        m_robot.reset();
+	m_robot->allMotorsOff();
     };
 
 private:
@@ -227,10 +211,19 @@ private:
         } // switch
         
         float cmd_pos = msg->data;
-        RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for %.2f mm", axisName.c_str(), cmd_pos);
         command_positions[axis] = cmd_pos;
+        try
+        {
+            m_robot->moveAxes(command_positions, false);
+            RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for %.2f mm", axisName.c_str(), cmd_pos);
+            m_robot->motionComplete(); // ensure motion is finished
 
-        m_robot->moveAxes(command_positions, false);
+        } // try
+        catch( int ec )
+        {
+            RCLCPP_WARN(this->get_logger(), "Moving axis throwing error code: %d! You may be publishing a command before motion has finished.", ec);
+            return;
+        } // catch
         
     } // topic_callbackAxisCommand
     
@@ -243,7 +236,19 @@ private:
         auto msg_ls = AxisMsg_t();
 
         // TODO: sample robot coordinates
-        float* positions = m_robot->getPosition(m_robotAxes, true);
+        float* positions;
+        try
+        {
+            positions = m_robot->getPosition(m_robotAxes, true);
+        
+        } // try
+        catch(int ec)
+        {
+            RCLCPP_WARN(this->get_logger(), "Error getting positions: error code = %d. Robot maybe buffered.", ec);
+            return;
+        
+        } // catch
+
         // RCLCPP_INFO(this->get_logger(), "Position: %.2f, %.2f, %.2f, %.2f", positions[0], positions[1], positions[2], positions[3]);
         msg_x.data  = positions[0];
         msg_y.data  = positions[1];
@@ -253,8 +258,8 @@ private:
         // publish
         m_pub_AxStateX  -> publish(msg_x);
         m_pub_AxStateY  -> publish(msg_y);
-        m_pub_AxStateZ  -> publish(msg_z);
         m_pub_AxStateLS -> publish(msg_ls);
+        m_pub_AxStateZ  -> publish(msg_z);
       
         
     } // publish_CurrentState

@@ -65,7 +65,14 @@ public:
     float getPositionZ (const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, false, true,  false}; return getPosition(axes, absolute)[2]; }
     float getPositionLS(const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, false, true,  false}; return getPosition(axes, absolute)[3]; }
     
+    // Assert motion is complete
+    void motionComplete(){ m_galilController->motionComplete(); }
+    // bool useMotionComplete(bool motionComplete) {m_useMotionComplete = motionComplete; return m_useMotionComplete; }
+
     // turn on/off the motors
+    /** 
+     * If axes[index] == true, then it will perform the motors(On/Off) on that axis. Otherwise, no operation will be performed
+     */
     void motorsOn (const bool axes[ROBOT_NUM_AXES]);
     void motorsOff(const bool axes[ROBOT_NUM_AXES]);
     
@@ -127,6 +134,7 @@ public: // static defaults
 private: // private members
     std::shared_ptr<GalilController> m_galilController;
     bool m_activeAxes[ROBOT_NUM_AXES] = {false, false, false, false};
+    bool m_useMotionComplete = false; // unused
     
 // private members
 protected:

@@ -6,9 +6,16 @@
 
 GalilController::GalilController(GCStringIn ipAddress)
 {
-    GOpen(ipAddress, &m_gc); // open the connection
-    
-    
+    try
+    {
+        e(GOpen(ipAddress, &m_gc)); // open the connection
+    } // try
+    catch (std::exception e)
+    {
+        std::cout << "Galil connection Error at " << ipAddress << std::endl;
+        throw e;
+        
+    } // catch    
 } // GalilController Constructor
 
 GalilController::~GalilController()
@@ -29,12 +36,14 @@ GCStringOut GalilController::bufferToGCStringOut(char* buffer, unsigned int buff
 
 GCStringOut GalilController::command(GCStringIn command) 
 {
-    std::cout << "Galil Command: " << command << std::endl; // display galil commands
+    // std::cout << "Galil Command: " << command << std::endl; // display galil commands
+    // GCmdT(m_gc, command, m_buffer, GALIL_BUFFER_SIZE, NULL); // no error checking trimmed version
     e(GCmdT(m_gc, command, m_buffer, GALIL_BUFFER_SIZE, NULL)); // trimmed version
     // this->e(GCommand(m_gc, command, m_buffer, G_SMALL_BUFFER, &m_bytesRead)); // full version
     
     GCStringOut response = bufferToGCStringOut(m_buffer, GALIL_BUFFER_SIZE); // get the response
     // std::cout << "Galil Response: " << response << std::endl; // display galil response messages
+    
     flushBuffer(); // flush the buffer
     
     return response;
@@ -43,7 +52,8 @@ GCStringOut GalilController::command(GCStringIn command)
 
 GCStringOut GalilController::motionComplete()
 {
-    return (GCStringOut) "1";  // TODO: implement
+    GCStringOut response = command("MC");
+    return response;  // TODO: implement
     
 } // GalilController:: motionComplete
 
