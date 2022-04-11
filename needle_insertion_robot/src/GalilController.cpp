@@ -229,18 +229,25 @@ long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
     // prepare the command
     std::string command = "";
     if (absolute)
-        command = "PA ";
+        command = "TP ";
     else
         command = "PR ";
     
     for (int i = 0; i < GALIL_NUM_AXES; i++)
     {
-        if (i < GALIL_NUM_AXES - 1 )
-            command += axes[i] ? "?," : ",";
-        
-        else // end of list
-            command += axes[i] ? "?" : "";
-        
+        if (absolute)
+        {
+            if (i < GALIL_NUM_AXES && axes[i])
+                command += axisName(i);
+        }
+        else
+        {
+            if (i < GALIL_NUM_AXES - 1 )
+                command += axes[i] ? "?," : ",";
+            
+            else // end of list
+                command += axes[i] ? "?" : "";
+        } // else
     } // for
     
     // get the response

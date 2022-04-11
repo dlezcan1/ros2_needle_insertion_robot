@@ -124,8 +124,8 @@ public:
         m_srv_zeroAxisLS    = this->create_service<Trigger>("axis/zero/linear_stage",   ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   3));
 
         // create timers
-        m_positionTimer  = this->create_wall_timer( 500ms, ROBOT_BIND_PUBLISHER(publish_CurrentPosition) );
-        m_stateTimer     = this->create_wall_timer( 200ms, ROBOT_BIND_PUBLISHER(publish_CurrentState));
+        m_positionTimer  = this->create_wall_timer( 10ms, ROBOT_BIND_PUBLISHER(publish_CurrentPosition) );
+        m_stateTimer     = this->create_wall_timer( 20ms, ROBOT_BIND_PUBLISHER(publish_CurrentState));
         
         RCLCPP_INFO(this->get_logger(), "Robot initialized and ready for operation.");
         
@@ -141,9 +141,9 @@ private:
     /* Service callbacks */
     void service_abort(const Trigger::Request::SharedPtr req, const Trigger::Response::SharedPtr res)
     {
-        RCLCPP_INFO(this->get_logger(), "Abort command triggered!");
+        RCLCPP_WARN(this->get_logger(), "Abort command triggered!");
         m_robot->abort();
-        RCLCPP_INFO(this->get_logger(), "Aborted!");
+        RCLCPP_WARN(this->get_logger(), "Aborted!");
 
         res->success = true;
 
