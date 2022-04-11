@@ -52,6 +52,8 @@ public:
     void allMotorsOff() { bool axes[ROBOT_NUM_AXES] = {true, true, true, true}; motorsOff(axes); }
     
     /** Get whether the motors are on or not */
+    const bool* getAxesMoving();
+    const bool  getAxisMoving(size_t axis) { return getAxesMoving()[axis]; }
     const bool* getMotorsOn() const { return m_activeAxes; }
 
     /** Get motor position commands

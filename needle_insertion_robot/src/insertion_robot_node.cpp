@@ -38,7 +38,7 @@ public:
     
     
     NeedleInsertionRobotNode(const std::string& name = "NeedleInsertionRobot")
-    : Node(name)
+    : Node(name), m_robotAxesMoving({false, false, false, false})
     {
         // declare parameters
         std::string ip_address = this->declare_parameter("robot.ip_address", DEFAULT_GALIL_IP); // IP address of the robot
@@ -101,6 +101,11 @@ public:
         m_pub_AxPosZ  = this->create_publisher<AxisMsg_t>("position/axis/z",            10);
         m_pub_AxPosLS = this->create_publisher<AxisMsg_t>("position/axis/linear_stage", 10);
 
+        m_pub_AxMovingX  = this->create_publisher<Bool>("state/moving/x",            10);
+        m_pub_AxMovingY  = this->create_publisher<Bool>("state/moving/y",            10);
+        m_pub_AxMovingZ  = this->create_publisher<Bool>("state/moving/z",            10);
+        m_pub_AxMovingLS = this->create_publisher<Bool>("state/moving/linear_stage", 10);
+
         m_pub_AxStateX  = this->create_publisher<Bool>("state/axis/x",            10);
         m_pub_AxStateY  = this->create_publisher<Bool>("state/axis/y",            10);
         m_pub_AxStateZ  = this->create_publisher<Bool>("state/axis/z",            10);
@@ -119,8 +124,8 @@ public:
         m_srv_zeroAxisLS    = this->create_service<Trigger>("zero/axis/linear_stage",   ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   3));
 
         // create timers
-        m_positionTimer  = this->create_wall_timer(  500ms, ROBOT_BIND_PUBLISHER(publish_CurrentPosition) );
-        m_stateTimer     = this->create_wall_timer( 1000ms, ROBOT_BIND_PUBLISHER(publish_CurrentState));
+        m_positionTimer  = this->create_wall_timer( 500ms, ROBOT_BIND_PUBLISHER(publish_CurrentPosition) );
+        m_stateTimer     = this->create_wall_timer( 200ms, ROBOT_BIND_PUBLISHER(publish_CurrentState));
         
         RCLCPP_INFO(this->get_logger(), "Robot initialized and ready for operation.");
         
@@ -340,7 +345,7 @@ private:
 
 
     /* Subscriber callbacks */
-    void topic_callbackAxisCommand(int axis, const AxisMsg_t::SharedPtr msg) const
+    void topic_callbackAxisCommand(int axis, const AxisMsg_t::SharedPtr msg)
     {
         std::string axisName;
         
@@ -375,13 +380,15 @@ private:
         {
             m_robot->moveAxes(command_positions, false);
             RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for %.2f mm", axisName.c_str(), cmd_pos);
-            m_robot->motionComplete(); // ensure motion is finished
-
+            
+            // m_robot->motionComplete(); // ensure motion is finished
+            
         } // try
-        catch( int ec )
+        catch( GReturn ec )
         {
             RCLCPP_WARN(this->get_logger(), "Moving axis throwing error code: %d! You may be publishing a command before motion has finished.", ec);
             return;
+
         } // catch
         
     } // topic_callbackAxisCommand
@@ -401,7 +408,7 @@ private:
             positions = m_robot->getPosition(m_robotAxes, true);
         
         } // try
-        catch(int ec)
+        catch(GReturn ec)
         {
             RCLCPP_WARN(this->get_logger(), "Error getting positions: error code = %d. Robot maybe buffered.", ec);
             return;
@@ -414,41 +421,81 @@ private:
 
         } // catch: invalid_argument
 
-        // RCLCPP_INFO(this->get_logger(), "Position: %.2f, %.2f, %.2f, %.2f", positions[0], positions[1], positions[2], positions[3]);
+        RCLCPP_DEBUG(this->get_logger(), "Position: %.2f, %.2f, %.2f, %.2f", positions[0], positions[1], positions[2], positions[3]);
+
+        // set the position data
         msg_x.data  = positions[0];
         msg_y.data  = positions[1];
         msg_z.data  = positions[2];
         msg_ls.data = positions[3];
 
         // publish
-        m_pub_AxPosX  -> publish(msg_x);
-        m_pub_AxPosY  -> publish(msg_y);
-        m_pub_AxPosZ  -> publish(msg_z);
-        m_pub_AxPosLS -> publish(msg_ls);
+        m_pub_AxPosX  -> publish( msg_x );
+        m_pub_AxPosY  -> publish( msg_y );
+        m_pub_AxPosZ  -> publish( msg_z );
+        m_pub_AxPosLS -> publish( msg_ls );
         
     } // publish_CurrentState
 
     void publish_CurrentState() // publishes the state of the axis
     {
         // get the current axis states
-        const bool* axes_on = m_robot->getMotorsOn();
+        const bool* axes_on;
+        try
+        {
+            axes_on = m_robot->getMotorsOn();
+        }
+        catch (GReturn ec)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Error getting which motors are on! Galil Error code = %d!", ec);
+            return;
+
+        } // catch
+        
+        const bool* axes_moving;
+        try
+        {
+            axes_moving = m_robot->getAxesMoving();
+        }
+        catch (GReturn ec)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Error getting which motors are moving! Galil Error code = %d!", ec);
+            return;
+            
+        } // catch
 
         // setup the messages
-        auto msg_x  = Bool();
-        auto msg_y  = Bool();
-        auto msg_z  = Bool();
-        auto msg_ls = Bool();
+        auto msg_on_x      = Bool();
+        auto msg_on_y      = Bool();
+        auto msg_on_z      = Bool();
+        auto msg_on_ls     = Bool();
 
-        msg_x.data  = axes_on[0];
-        msg_y.data  = axes_on[1];
-        msg_z.data  = axes_on[2];
-        msg_ls.data = axes_on[3];
+        auto msg_moving_x  = Bool();
+        auto msg_moving_y  = Bool();
+        auto msg_moving_z  = Bool();
+        auto msg_moving_ls = Bool();
 
-        // publish
-        m_pub_AxStateX  -> publish( msg_x );
-        m_pub_AxStateY  -> publish( msg_y );
-        m_pub_AxStateZ  -> publish( msg_z );
-        m_pub_AxStateLS -> publish( msg_ls ); 
+        // set the data for the messages
+        msg_on_x.data      = axes_on[0];
+        msg_on_y.data      = axes_on[1];
+        msg_on_z.data      = axes_on[2];
+        msg_on_ls.data     = axes_on[3];
+
+        msg_moving_x.data  = axes_moving[0];
+        msg_moving_y.data  = axes_moving[1];
+        msg_moving_z.data  = axes_moving[2];
+        msg_moving_ls.data = axes_moving[3];
+
+        // publish the messages
+        m_pub_AxStateX   -> publish( msg_on_x );
+        m_pub_AxStateY   -> publish( msg_on_y );
+        m_pub_AxStateZ   -> publish( msg_on_z );
+        m_pub_AxStateLS  -> publish( msg_on_ls ); 
+
+        m_pub_AxMovingX  -> publish( msg_moving_x );
+        m_pub_AxMovingY  -> publish( msg_moving_y );
+        m_pub_AxMovingZ  -> publish( msg_moving_z );
+        m_pub_AxMovingLS -> publish( msg_moving_ls ); 
 
     } // publish_CurrentState
 
@@ -470,10 +517,14 @@ private:
         RCLCPP_INFO(this->get_logger(), "Updating Robot configuration parameters.");
 
     } // update_robotParams
+
+private: // functions
+    bool axisMoving(size_t axis){ return m_robot->getAxisMoving(axis); }
     
 private: // members
     std::shared_ptr<NeedleInsertionRobot> m_robot;
-    const bool m_robotAxes[4] = {true, true, true, true};
+    const bool m_robotAxes[4] = {true, true, true, true};     // Robot axes to use (use them all)
+    bool m_robotAxesMoving[4]; // whether robot axes are moving or not
     
     // timers
     rclcpp::TimerBase::SharedPtr m_positionTimer, m_stateTimer;
@@ -493,7 +544,12 @@ private: // members
     rclcpp::Publisher<Bool>::SharedPtr m_pub_AxStateX,
                                        m_pub_AxStateY,
                                        m_pub_AxStateZ,
-                                       m_pub_AxStateLS;
+                                       m_pub_AxStateLS,
+                                       
+                                       m_pub_AxMovingX,
+                                       m_pub_AxMovingY,
+                                       m_pub_AxMovingZ,
+                                       m_pub_AxMovingLS;
 
     // services
     rclcpp::Service<Trigger>::SharedPtr m_srv_abort,
@@ -507,8 +563,7 @@ private: // members
                                         m_srv_zeroAxisY,
                                         m_srv_zeroAxisZ,
                                         m_srv_zeroAxisLS;
-
-    
+                                        
 }; // class: NeedleInsertionRobotNode
 
 /* =================== MAIN METHOD ======================================*/

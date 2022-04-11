@@ -166,6 +166,64 @@ GReturn GalilController::moveAxesRelative(long axes[GALIL_NUM_AXES])
     
 } // GalilController::moveAxesRelative
 
+bool* GalilController::getAxesMoving()
+{
+    std::string command = "MG ";
+    // sample command "MG _BGA, _BGB, _BGC, _BGD, _BGE";
+
+    // Set up the galil command
+    for (int axis = 0; axis < GALIL_NUM_AXES; axis++)
+    {
+        command += std::string("_BG") + axisName(axis);
+        if (axis < GALIL_NUM_AXES - 1) // check for last axis
+            command += ", \",\", "; // add comma-separator
+
+    } // for
+    
+    // get the response
+    GCStringOut response = this->command(command);
+    std::string s_response(response);
+    
+    // setup return
+    bool* axesRunning = new bool[GALIL_NUM_AXES];
+    for (size_t axis = 0; axis < GALIL_NUM_AXES, axis++;)
+        axesRunning[axis] = false;
+    
+    // parse the response
+    std::string token;
+    s_response += ","; // add-on to end to get last part
+    std::size_t pos = 0;
+
+    int counter = 0;
+    
+    while((pos = s_response.find(",")) != std::string::npos && (counter < GALIL_NUM_AXES))
+    {
+        token = s_response.substr(0, pos);
+        bool isnumeric = token.find_first_not_of("-0123456789.") == std::string::npos;
+        
+        try
+        {
+            // add to result
+            if (counter >= GALIL_NUM_AXES)
+                break;
+        
+
+            axesRunning[counter++] = std::stof(token) > 0;
+            
+        } // try
+        catch (std::invalid_argument e)
+        {
+            continue; // not a float
+        }
+
+        s_response.erase(0, pos + 1); // remove the processed part of string
+
+    } // while
+
+    return axesRunning;
+
+} // GalilController::getAxesMoving
+
 long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
 {
     // prepare the command
@@ -344,7 +402,8 @@ GReturn GalilController::stopAxes(bool axes[GALIL_NUM_AXES])
 GReturn GalilController::zeroAxes(bool axes[GALIL_NUM_AXES])
 {
     std::string command = "DP ";
-    
+
+    // setup the commmand
     for (int i = 0; i < GALIL_NUM_AXES; i++)
         command += axes[i] ? std::string(1, axisName(i)) : "";
     

@@ -49,7 +49,7 @@ public:
     ~GalilController();
     /** Abort motion  */
     GReturn abort(){ command("AB"); return 0; }
-    
+
     /**
      Send commands to Galil Controller
      
@@ -58,9 +58,15 @@ public:
      @returns GCStringOut of command response
      
      */
-    GCStringOut command(GCStringIn command);
-    GCStringOut command(std::string& command){ return this->command(command.c_str()); }
+    GCStringOut command (GCStringIn command);
+    GCStringOut command (std::string& command){ return this->command(command.c_str()); }
     
+    /** Get the axis state of whether it is moving or not 
+     * 
+     */
+    bool* getAxesMoving();
+    bool  getAxisMoving(size_t axis){ return getAxesMoving()[axis]; }
+
     /** Get the axes positions
      
      @param axes (boolean array of whether to get this axes for not

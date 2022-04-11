@@ -47,6 +47,16 @@ NeedleInsertionRobot::~NeedleInsertionRobot()
     
 } // destructor
 
+const bool* NeedleInsertionRobot::getAxesMoving()
+{
+    bool* gc_axesMoving = m_galilController->getAxesMoving();
+
+    bool* axesMoving = galilToRobotAxes( gc_axesMoving );
+
+    return axesMoving;
+
+} // NeedleInsertionRobot::getAxesMoving
+
 float* NeedleInsertionRobot::getPosition(const bool axes[ROBOT_NUM_AXES], const bool absolute) const
 {
     bool* gc_axes = robotToGalilAxes(axes);
