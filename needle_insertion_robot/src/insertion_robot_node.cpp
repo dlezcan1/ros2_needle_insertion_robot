@@ -90,38 +90,38 @@ public:
         // this->add_on_set_parameters_callback( ROBOT_BIND_FN(service_onSetParamsCallback) ); // DO NOT USE
 
         // initalize subscribers
-        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("command/axis/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
-        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("command/axis/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
-        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("command/axis/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
-        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("command/axis/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
+        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("axis/command/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
+        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("axis/command/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
+        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("axis/command/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
+        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("axis/command/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
         
         // initalize publishers
-        m_pub_AxPosX  = this->create_publisher<AxisMsg_t>("position/axis/x",            10);
-        m_pub_AxPosY  = this->create_publisher<AxisMsg_t>("position/axis/y",            10);
-        m_pub_AxPosZ  = this->create_publisher<AxisMsg_t>("position/axis/z",            10);
-        m_pub_AxPosLS = this->create_publisher<AxisMsg_t>("position/axis/linear_stage", 10);
+        m_pub_AxPosX  = this->create_publisher<AxisMsg_t>("axis/position/x",            10);
+        m_pub_AxPosY  = this->create_publisher<AxisMsg_t>("axis/position/y",            10);
+        m_pub_AxPosZ  = this->create_publisher<AxisMsg_t>("axis/position/z",            10);
+        m_pub_AxPosLS = this->create_publisher<AxisMsg_t>("axis/position/linear_stage", 10);
 
-        m_pub_AxMovingX  = this->create_publisher<Bool>("state/moving/x",            10);
-        m_pub_AxMovingY  = this->create_publisher<Bool>("state/moving/y",            10);
-        m_pub_AxMovingZ  = this->create_publisher<Bool>("state/moving/z",            10);
-        m_pub_AxMovingLS = this->create_publisher<Bool>("state/moving/linear_stage", 10);
+        m_pub_AxMovingX  = this->create_publisher<Bool>("axis/state/moving/x",            10);
+        m_pub_AxMovingY  = this->create_publisher<Bool>("axis/state/moving/y",            10);
+        m_pub_AxMovingZ  = this->create_publisher<Bool>("axis/state/moving/z",            10);
+        m_pub_AxMovingLS = this->create_publisher<Bool>("axis/state/moving/linear_stage", 10);
 
-        m_pub_AxStateX  = this->create_publisher<Bool>("state/axis/x",            10);
-        m_pub_AxStateY  = this->create_publisher<Bool>("state/axis/y",            10);
-        m_pub_AxStateZ  = this->create_publisher<Bool>("state/axis/z",            10);
-        m_pub_AxStateLS = this->create_publisher<Bool>("state/axis/linear_stage", 10);
+        m_pub_AxStateX  = this->create_publisher<Bool>("axis/state/on/x",            10);
+        m_pub_AxStateY  = this->create_publisher<Bool>("axis/state/on/y",            10);
+        m_pub_AxStateZ  = this->create_publisher<Bool>("axis/state/on/z",            10);
+        m_pub_AxStateLS = this->create_publisher<Bool>("axis/state/on/linear_stage", 10);
 
         // initialize services
         m_srv_abort         = this->create_service<Trigger>("abort",                    ROBOT_BIND_SERVICE(service_abort));
-        m_srv_toggleAxisX   = this->create_service<Trigger>("toggle/axis/x",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 0));
-        m_srv_toggleAxisY   = this->create_service<Trigger>("toggle/axis/y",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 1));
-        m_srv_toggleAxisZ   = this->create_service<Trigger>("toggle/axis/z",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 2));
-        m_srv_toggleAxisLS  = this->create_service<Trigger>("toggle/axis/linear_stage", ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 3));
+        m_srv_toggleAxisX   = this->create_service<Trigger>("axis/state/toggle/x",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 0));
+        m_srv_toggleAxisY   = this->create_service<Trigger>("axis/state/toggle/y",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 1));
+        m_srv_toggleAxisZ   = this->create_service<Trigger>("axis/state/toggle/z",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 2));
+        m_srv_toggleAxisLS  = this->create_service<Trigger>("axis/state/toggle/linear_stage", ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 3));
 
-        m_srv_zeroAxisX     = this->create_service<Trigger>("zero/axis/x",              ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   0));
-        m_srv_zeroAxisY     = this->create_service<Trigger>("zero/axis/y",              ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   1));
-        m_srv_zeroAxisZ     = this->create_service<Trigger>("zero/axis/z",              ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   2));
-        m_srv_zeroAxisLS    = this->create_service<Trigger>("zero/axis/linear_stage",   ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   3));
+        m_srv_zeroAxisX     = this->create_service<Trigger>("axis/zero/x",              ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   0));
+        m_srv_zeroAxisY     = this->create_service<Trigger>("axis/zero/y",              ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   1));
+        m_srv_zeroAxisZ     = this->create_service<Trigger>("axis/zero/z",              ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   2));
+        m_srv_zeroAxisLS    = this->create_service<Trigger>("axis/zero/linear_stage",   ROBOT_BIND_AXIS_SERVICE(Trigger, service_zeroAxis,   3));
 
         // create timers
         m_positionTimer  = this->create_wall_timer( 500ms, ROBOT_BIND_PUBLISHER(publish_CurrentPosition) );
