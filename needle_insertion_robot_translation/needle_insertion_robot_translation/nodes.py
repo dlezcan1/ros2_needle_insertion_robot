@@ -12,7 +12,6 @@ from rclpy.node import Node
 
 # actions 
 from needle_insertion_robot_translation_interfaces.action import MoveStage
-from action_tutorials_interfaces.action import Fibonacci
 
 # msgs
 from geometry_msgs.msg import PoseStamped
@@ -20,6 +19,63 @@ from std_msgs.msg import Bool, Float32
 
 # services
 from std_srvs.srv import Trigger
+
+class CoordinateConversions:
+    """
+        Translation configuration
+
+        Axis directions:
+            Robot -->   Stage         | Physical Motion (facing needle insertion direction)
+            --------------------------------------------------------------------------------
+              x   -->     y           |   insert needle
+              y   -->    -x           |   left
+             -z   -->     z           |   up
+
+    """
+    @staticmethod
+    def RobotAxisPositionsToRobot(x_ax, y_ax, z_ax, ls_ax):
+        """ convert the Robot Axis Positions to Robot Coordinates"""
+        x_r = x_ax - ls_ax
+        y_r = y_ax
+        z_r = z_ax
+
+        return x_r, y_r, z_r
+        
+    # RobotAxisPositionsToRobot
+
+    @staticmethod
+    def RobotAxisPositionsToStage(x_ax, y_ax, z_ax, ls_ax):
+        """ convert the Robot Axis Positions to Robot Coordinates"""
+        x_r, y_r, z_r = CoordinateConversions.RobotAxisPositionsToRobot(x_ax, y_ax, z_ax, ls_ax)
+
+        return CoordinateConversions.RobotToStage(x_r, y_r, z_r)
+        
+    # RobotAxisPositionsToRobot
+
+    @staticmethod
+    def RobotToStage(x_r, y_r, z_r):
+        """ Convert robot coordinates to the stage coordinates """
+        x_s = -y_r * 1e-3 # convert mm -> m
+        y_s =  x_r * 1e-3 # convert mm -> m
+        z_s =  z_r * 1e-3 # convert mm -> m
+
+        return x_s, y_s, z_s
+
+    # RobotToStage
+
+    @staticmethod
+    def StageToRobot(x_s, y_s, z_s):
+        """ Convert Stage to Robot Coordinates """
+        x_r =  y_s * 1e3 # convert m -> mm
+        y_r = -x_s * 1e3 # convert m -> mm
+        z_r = -z_s * 1e3 # convert m -> mm
+
+        return x_r, y_r, z_r
+
+    # StageToRobot
+
+
+# class: CoordinateConversions
 
 class NeedleInsertionRobotActionServer(Node):
     def __init__(self, name = "NeedleInsertionRobotActionServerNode" ):
@@ -46,23 +102,26 @@ class NeedleInsertionRobotActionServer(Node):
                                                   execute_callback = self.action_translation_execute_callback,
                                                   callback_group   = MutuallyExclusiveCallbackGroup(),
                                                   goal_callback    = self.action_translation_goal_callback,
-                                                  cancel_callback  = self.action_translation_cancel_callback)
+                                                  cancel_callback  = self.action_translation_cancel_callback
+                                                )
 
         # inform node is running
         self.get_logger().info("Running needle insertion robot action server.")
         
     # __init__
 
-    def action_translation_cancel_callback( self, goal_handle ):
+    def action_translation_cancel_callback( self, goal_handle: ServerGoalHandle ):
         """ Cancel the current action """
-        # implement abort 
+        # abort robot motion
         self.cli_robot_abort.call()
+
+        goal_handle.abort()
         
         return CancelResponse.ACCEPT
 
     # action_translation_cancel_callback
 
-    async def action_translation_execute_callback( self, goal_handle ) :
+    async def action_translation_execute_callback( self, goal_handle: ServerGoalHandle ) :
         """ Handle the goal """
         self.get_logger().info(f"Executing goal to axis: x={goal_handle.request.x} m, z={goal_handle.request.z} m...")
 
@@ -74,10 +133,12 @@ class NeedleInsertionRobotActionServer(Node):
         feedback_msg = MoveStage.Feedback()
         
         # command the robot to goal position ( convert m -> mm )
-        self.pub_robot_axisCommand_y.publish( Float32( data=goal_handle.request.x * 1e3 - self.robot_axisPositions[1] ) ) # command y-axis
-        self.pub_robot_axisCommand_z.publish( Float32( data=goal_handle.request.z * 1e3 - self.robot_axisPositions[2] ) ) # command z-axis 
+        _, current_y_r, current_z_r = self.get_robotCoordinates()
+        _, desired_y_r, desired_z_r = CoordinateConversions.StageToRobot(goal_handle.request.x, 0, goal_handle.request.z)
+        self.pub_robot_axisCommand_y.publish( Float32( data=desired_y_r - current_y_r ) ) # command y-axis
+        self.pub_robot_axisCommand_z.publish( Float32( data=desired_z_r - current_z_r ) ) # command z-axis 
         
-        time.sleep(1.0)
+        time.sleep(0.5)
 
          # provide feedback
         while self.robot_axisMoving[1] or self.robot_axisMoving[2]: # check if axis Y or Z are moving
@@ -86,18 +147,20 @@ class NeedleInsertionRobotActionServer(Node):
 
                 # setup the result
                 result_msg = MoveStage.Result()
-                result_msg.x = float( self.robot_axisPositions[1] * 1e-3 ) # y-axis
-                result_msg.z = float( self.robot_axisPositions[2] * 1e-3 ) # z-axis
+                current_x_s, _, current_z_s = self.get_stageCoordinates()
+                result_msg.x = float( current_x_s ) # robot y-axis
+                result_msg.z = float( current_z_s ) # robot z-axis
                 result_msg.error = compute_error( result_msg.x, result_msg.z )
 
                 return result_msg
 
             # if 
 
-            feedback_msg.x = float( self.robot_axisPositions[1] * 1e-3 ) # y-axis
-            feedback_msg.z = float( self.robot_axisPositions[2] * 1e-3 ) # z-axis
+            current_x_s, _, current_z_s = self.get_stageCoordinates()
+            feedback_msg.x = float( current_x_s ) # robot y-axis
+            feedback_msg.z = float( current_z_s ) # robot z-axis
             time_now = self.get_clock().now().seconds_nanoseconds()
-            feedback_msg.time = float(time_now[0]*1e9 + time_now[1])
+            feedback_msg.time = float( time_now[0]*1e9 + time_now[1] )
             feedback_msg.error = compute_error(feedback_msg.x, feedback_msg.z)
         
             goal_handle.publish_feedback(feedback_msg)
@@ -107,8 +170,9 @@ class NeedleInsertionRobotActionServer(Node):
 
         # setup the result
         result_msg = MoveStage.Result()
-        result_msg.x = float(self.robot_axisPositions[1] * 1e-3) # y-axis
-        result_msg.z = float(self.robot_axisPositions[2] * 1e-3) # z-axis
+        current_x_s, _, current_z_s = self.get_stageCoordinates()
+        result_msg.x = float( current_x_s ) # robot y-axis
+        result_msg.z = float( current_z_s ) # robot z-axis
         result_msg.error = compute_error( result_msg.x, result_msg.z )
 
         self.actionsrv_translation_running = False # action server finished
@@ -125,7 +189,7 @@ class NeedleInsertionRobotActionServer(Node):
 
     # action_callback_translation
 
-    def action_translation_goal_callback( self, goal_handle ):
+    def action_translation_goal_callback( self, goal_handle: ServerGoalHandle ):
         """ This action server will only handle one action at a time """
         # check if the action server is running right now or not.        
         if self.actionsrv_translation_running or any(self.robot_axisMoving):
@@ -145,10 +209,30 @@ class NeedleInsertionRobotActionServer(Node):
 
     # destroy_node
 
+    def get_robotCoordinates(self):
+        """ Get the current robot coordinates """
+        
+        return CoordinateConversions.RobotAxisPositionsToRobot(self.robot_axisPositions[0],
+                                                               self.robot_axisPositions[1],
+                                                               self.robot_axisPositions[2],
+                                                               self.robot_axisPositions[3]
+                                                            )
+
+    # get_robotCoordinates
+
+    def get_stageCoordinates(self):
+        """ Get the current stage coordinates """
+        x_r, y_r, z_r  = self.get_robotCoordinates()
+
+        return CoordinateConversions.RobotToStage(x_r, y_r, z_r)
+
+    # get_stageCoordinates
+
 # class: NeedleInsertionRobotActionServer
 
 
 class NeedleInsertionRobotTranslationNode(Node):
+    
     def __init__( self, name = "NeedleInsertionRobotTranslationNode", action_server: NeedleInsertionRobotActionServer=None ):
         super().__init__( name )
 
@@ -191,6 +275,25 @@ class NeedleInsertionRobotTranslationNode(Node):
 
     # destroy_node
 
+    def get_robotCoordinates(self):
+        """ Get the current robot coordinates """
+        
+        return CoordinateConversions.RobotAxisPositionsToRobot(self.robot_axisPositions[0],
+                                                               self.robot_axisPositions[1],
+                                                               self.robot_axisPositions[2],
+                                                               self.robot_axisPositions[3]
+                                                            )
+
+    # get_robotCoordinates
+
+    def get_stageCoordinates(self):
+        """ Get the current stage coordinates """
+        x_r, y_r, z_r  = self.get_robotCoordinates()
+
+        return CoordinateConversions.RobotToStage(x_r, y_r, z_r)
+
+    # get_stageCoordinates
+
     def publish_needlepose( self ):
         """ Publish the current needle pose """ 
         # configure the needle pose message
@@ -200,9 +303,18 @@ class NeedleInsertionRobotTranslationNode(Node):
         msg.header.stamp    = self.get_clock().now().to_msg()
         msg.header.frame_id = "robot"
 
-        # TODO: configure the needle pose message in stage coordinates
+        # configure the needle pose message in stage coordinates
+        current_x_s, current_y_s, current_z_s = self.get_stageCoordinates()
+        msg.pose.position.x = current_x_s
+        msg.pose.position.y = current_y_s
+        msg.pose.position.z = current_z_s
 
-        # TODO: publish the message
+        msg.pose.orientation.w = 0.0
+        msg.pose.orientation.x = 0.0
+        msg.pose.orientation.y = 0.0 # axis to rotate needle axis
+        msg.pose.orientation.z = 0.0
+
+        # publish the message
         self.pub_needlepose.publish( msg )
 
     # publish_needlepose
@@ -223,6 +335,5 @@ class NeedleInsertionRobotTranslationNode(Node):
         self.action_server.robot_axisPositions[axis] = self.robot_axisPositions[axis]
 
     # sub_axisPosition_callback
-
 
 # class: NeedleInsertionRobotTranslationNode
