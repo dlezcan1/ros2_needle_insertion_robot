@@ -382,9 +382,13 @@ private:
         command_positions[axis] = cmd_pos;
         try
         {
-            m_robot->moveAxes(command_positions, false);
             RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for %.2f mm", axisName.c_str(), cmd_pos);
-            
+            if (m_robot->getMotorsOn()[axis])
+                m_robot->moveAxes(command_positions, false);
+
+            else
+                RCLCPP_WARN(this->get_logger(), "Axis '%s' is not on! Turn the axis on before moving.", axisName.c_str());
+
             // m_robot->motionComplete(); // ensure motion is finished
             
         } // try
