@@ -287,22 +287,26 @@ private:
         } // switch
 
         command_positions[axis] = true;
-
+        const char message_fmt[] = "Axis %s has been turned %s.";
+        char message[100];
         if (m_robot->getMotorsOn()[axis])
         {
             RCLCPP_INFO(this->get_logger(), "Toggling axis %s off", axisName.c_str());
             m_robot->motorsOff(command_positions);
+            sprintf( message, message_fmt, axisName.c_str(), "off" );
         
         } // if
         else
         {
             RCLCPP_INFO(this->get_logger(), "Toggling axis %s on", axisName.c_str());
             m_robot->motorsOn(command_positions);
+            sprintf( message, message_fmt, axisName.c_str(), "on" );
 
         } // else
         
         // set result success
         res->success = true;
+        res->message = message;
 
     } // service_toggleAxis
 
