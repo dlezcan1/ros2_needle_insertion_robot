@@ -8,6 +8,10 @@ NeedleInsertionRobot:
         kP:            54
         kI:             4
         kD:           480
+        limit:
+          active: true
+          min:    -100.0
+          max:     100.0
       y:
         speed:        2.5
         acceleration: 1.5
@@ -15,6 +19,10 @@ NeedleInsertionRobot:
         kP:            15
         kI:             4
         kD:           332
+        limit:
+          active: true
+          min:    -100.0
+          max:     100.0
       z:
         speed:        2.5
         acceleration: 1.5
@@ -22,6 +30,10 @@ NeedleInsertionRobot:
         kP:            54
         kI:             4
         kD:           480
+        limit:
+          active: true
+          min:    -0.5
+          max:     0.5
       linear_stage:
         speed:        4.0
         acceleration: 0.2289
@@ -29,6 +41,10 @@ NeedleInsertionRobot:
         kP:            54
         kI:             4
         kD:           480
+        limit:
+          active: true
+          min:    -100.0
+          max:     100.0
 
 /stage:
   NeedleInsertionRobot:
@@ -41,6 +57,10 @@ NeedleInsertionRobot:
           kP:            54
           kI:             4
           kD:           480
+          limit:
+            active: true
+            min:    -100.0
+            max:     100.0
         y:
           speed:        2.5
           acceleration: 1.5
@@ -48,6 +68,10 @@ NeedleInsertionRobot:
           kP:            15
           kI:             4
           kD:           332
+          limit:
+            active: true
+            min:    -100.0
+            max:     100.0
         z:
           speed:        2.5
           acceleration: 1.5
@@ -55,6 +79,10 @@ NeedleInsertionRobot:
           kP:            54
           kI:             4
           kD:           480
+          limit:
+            active: true
+            min:    -0.5
+            max:     0.5
         linear_stage:
           speed:        2.0
           acceleration: 0.2289
@@ -62,6 +90,10 @@ NeedleInsertionRobot:
           kP:            54
           kI:             4
           kD:           480
+          limit:
+            active: true
+            min:    -100.0
+            max:     100.0
 
 /**:
   ros__parameters:
@@ -73,6 +105,10 @@ NeedleInsertionRobot:
         kP:            54
         kI:             4
         kD:           480
+        limit:
+            active: true
+            min:    -100.0
+            max:     100.0
       y:
         speed:        2.5
         acceleration: 1.5
@@ -80,6 +116,10 @@ NeedleInsertionRobot:
         kP:            15
         kI:             4
         kD:           332
+        limit:
+            active: true
+            min:    -100.0
+            max:     100.0
       z:
         speed:        2.5
         acceleration: 1.5
@@ -87,6 +127,10 @@ NeedleInsertionRobot:
         kP:            54
         kI:             4
         kD:           480
+        limit:
+            active: true
+            min:    -0.5
+            max:     0.5
       linear_stage:
         speed:        1.0
         acceleration: 0.2289
@@ -94,3 +138,7 @@ NeedleInsertionRobot:
         kP:            54
         kI:             4
         kD:           480
+        limit:
+            active: true
+            min:    -100.0
+            max:     100.0

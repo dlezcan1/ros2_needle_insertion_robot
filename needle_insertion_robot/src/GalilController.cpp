@@ -3,6 +3,12 @@
 #include <algorithm>
 #include <iostream>
 
+#ifdef GALIL_DEBUG
+    #define GALIL_OUT(x) cout << "[GALIL-DEBUG]: " << x << endl;
+#else
+    #define GALIL_OUT(x)
+#endif
+
 
 GalilController::GalilController(GCStringIn ipAddress)
 {
@@ -12,7 +18,7 @@ GalilController::GalilController(GCStringIn ipAddress)
     } // try
     catch (std::exception e)
     {
-        std::cout << "Galil connection Error at " << ipAddress << std::endl;
+        GALIL_OUT("Galil connection Error at " << ipAddress);
         throw e;
         
     } // catch    
@@ -36,13 +42,13 @@ GCStringOut GalilController::bufferToGCStringOut(char* buffer, unsigned int buff
 
 GCStringOut GalilController::command(GCStringIn command) 
 {
-    // std::cout << "Galil Command: " << command << std::endl; // display galil commands
+    GALIL_OUT("Galil Command: " << command); // display galil commands
     // GCmdT(m_gc, command, m_buffer, GALIL_BUFFER_SIZE, NULL); // no error checking trimmed version
     e(GCmdT(m_gc, command, m_buffer, GALIL_BUFFER_SIZE, NULL)); // trimmed version
     // this->e(GCommand(m_gc, command, m_buffer, G_SMALL_BUFFER, &m_bytesRead)); // full version
     
     GCStringOut response = bufferToGCStringOut(m_buffer, GALIL_BUFFER_SIZE); // get the response
-    // std::cout << "Galil Response: " << response << std::endl; // display galil response messages
+    GALIL_OUT("Galil Response: " << response); // display galil response messages
     
     flushBuffer(); // flush the buffer
     
@@ -412,8 +418,8 @@ GReturn GalilController::zeroAxes(bool axes[GALIL_NUM_AXES])
 
     // setup the commmand
     for (int i = 0; i < GALIL_NUM_AXES; i++)
-        command += axes[i] ? std::string(1, axisName(i)) : "";
-    
+        command += axes[i] ? "0, " : ", ";
+
     this->command(command); // send the command
     
     return 0;

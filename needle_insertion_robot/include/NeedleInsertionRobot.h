@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <cmath>
+#include <map>
+
 #include "GalilController.h"
 
 
@@ -17,6 +20,27 @@
 const float NULL_FLOAT_AXIS = std::numeric_limits<float>::lowest();
 inline static bool isNullAxis(float axis){ return axis == NULL_FLOAT_AXIS; }
 
+struct RobotLimit
+{
+    const static float MIN = std::numeric_limits<float>::lowest(),
+                       MAX = std::numeric_limits<float>::max();
+    bool active = true; // whether limit is active or not
+    float min = MIN, max = MAX;
+
+    /** Functions */
+    RobotLimit(){}
+    RobotLimit(bool active) : active(active) {}
+    RobotLimit(float min, float max) : RobotLimit( min, max, true ) {}
+    RobotLimit(float min, float max, bool active) : min(min), max(max), active(active) {}
+
+    inline float limit(const float& position) const
+    {
+        return std::min( std::max( this->min, position ), this->max );      
+
+    } // limit
+
+}; // struct: RobotLimit
+
 class NeedleInsertionRobot
 {
 public:
@@ -24,7 +48,7 @@ public:
     /** Default constructor with pre-defined galil IP address.
             
      */
-    NeedleInsertionRobot();
+    NeedleInsertionRobot() : NeedleInsertionRobot(DEFAULT_GALIL_IP) {}
    /** Constructor with galil controller IP address
     
     @param ipAddress GStringIn of the IP address of the controller.
@@ -37,7 +61,7 @@ public:
             
             @returns GalilController pointer to current controller
      */
-    const std::shared_ptr<GalilController> getGalilController() const {return m_galilController;}
+    const std::shared_ptr<GalilController> getGalilController() {return m_galilController;}
     /** Send a direct commadn to the galiil controller
             @param command GCStringIn of the galil command to send
      */
@@ -53,7 +77,9 @@ public:
     
     /** Get whether the motors are on or not */
     const bool* getAxesMoving();
-    const bool  getAxisMoving(size_t axis) { return getAxesMoving()[axis]; }
+    const bool  getAxisMoving(const size_t axis) { return getAxesMoving()[axis]; }
+    const std::array<RobotLimit, ROBOT_NUM_AXES>& getLimits() { return m_limits; }
+    const RobotLimit& getLimit(const size_t axis) {return getLimits()[axis]; }
     const bool* getMotorsOn() const { return m_activeAxes; }
 
     /** Get motor position commands
@@ -65,7 +91,7 @@ public:
     float getPositionX (const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {true,  false, false, false}; return getPosition(axes, absolute)[0]; }
     float getPositionY (const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, true,  false, false}; return getPosition(axes, absolute)[1]; }
     float getPositionZ (const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, false, true,  false}; return getPosition(axes, absolute)[2]; }
-    float getPositionLS(const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, false, true,  false}; return getPosition(axes, absolute)[3]; }
+    float getPositionLS(const bool absolute=false) const {bool axes[ROBOT_NUM_AXES] = {false, false, false, true};  return getPosition(axes, absolute)[3]; }
     
     // Assert motion is complete
     void motionComplete(){ m_galilController->motionComplete(); }
@@ -102,6 +128,26 @@ public:
     void setAcceleration(const float ac_axes[ROBOT_NUM_AXES]) const;
     void setDeceleration(const float dc_axes[ROBOT_NUM_AXES]) const;
     void setSpeed(const float sp_axes[ROBOT_NUM_AXES]) const;
+
+    /** Robot Limit functionality */
+    /** Set whether a limit is active or not 
+     * @return boolean of active status for the current limit
+    */
+    std::array<bool, ROBOT_NUM_AXES> setLimitsActive ( std::array<bool, ROBOT_NUM_AXES> actives );
+    std::array<bool, ROBOT_NUM_AXES> setLimitsActive ( std::vector< std::pair<size_t, bool> > actives );
+    bool setLimitActiveX ( bool active ) { return setLimitsActive( { std::make_pair( 0, active ) } )[0]; }
+    bool setLimitActiveY ( bool active ) { return setLimitsActive( { std::make_pair( 1, active ) } )[1]; }
+    bool setLimitActiveZ ( bool active ) { return setLimitsActive( { std::make_pair( 2, active ) } )[2]; }
+    bool setLimitActiveLS( bool active ) { return setLimitsActive( { std::make_pair( 3, active ) } )[3]; }
+
+    /** Set the robot limits using the RobotLimit struct */
+    void setLimits ( std::array<RobotLimit, ROBOT_NUM_AXES> limits ) { m_limits = limits; } // wipes everything clean
+    void setLimits ( std::initializer_list< std::pair<size_t, RobotLimit> > limits ); // for updating limits
+    void setLimits ( std::map<size_t, RobotLimit> limits ); // for updating limits
+    void setLimitX ( RobotLimit limit ){ setLimits( { { {0, limit} } } ); }
+    void setLimitY ( RobotLimit limit ){ setLimits( { { {1, limit} } } ); }
+    void setLimitZ ( RobotLimit limit ){ setLimits( { { {2, limit} } } ); }
+    void setLimitLS( RobotLimit limit ){ setLimits( { { {3, limit} } } ); }
     
     /** Stop moving axes
      @param axes bool[GALIL_NUM_AXES[] on whether to stop particular axes or not
@@ -137,15 +183,26 @@ private: // private members
     std::shared_ptr<GalilController> m_galilController;
     bool m_activeAxes[ROBOT_NUM_AXES] = {false, false, false, false};
     bool m_useMotionComplete = false; // unused
+    std::array<RobotLimit, ROBOT_NUM_AXES> m_limits;
     
-// private members
-protected:
+
+protected: // protected members
     /* Index for each axes in the Galil Controller Axes */
     const static size_t m_xIdx  = 1; // B: x axis
     const static size_t m_yIdx  = 2; // C: y axis
     const static size_t m_zIdx  = 3; // D: z axis
     const static size_t m_lsIdx = 4; // E: linear stage axis
     
+
+protected: // protected fnctions
+    /** Robot Limit Handling 
+     * @arg absolute: whether the current axes command is an absolute positioning or relative
+     * 
+     * @returns array of floats with size [ROBOT_NUM_AXES] with limited motion
+    */
+    float* limitMotion( const float axes[ROBOT_NUM_AXES], bool absolute ) const;
+
+    /** Galil Controller Interfacing */
     size_t getGalilAxisIndex(size_t axis) const
     {
         switch (axis)

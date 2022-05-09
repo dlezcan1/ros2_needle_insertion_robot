@@ -50,33 +50,45 @@ public:
         m_robot->allMotorsOff();
         
         // parameters
-        float x_speed = this->declare_parameter( "axis.x.speed",        NeedleInsertionRobot::s_default_speed[0] );
-        float x_accel = this->declare_parameter( "axis.x.acceleration", NeedleInsertionRobot::s_default_acceleration[0] );
-        float x_decel = this->declare_parameter( "axis.x.deceleration", NeedleInsertionRobot::s_default_deceleration[0] );
-        long  x_kp    = this->declare_parameter( "axis.x.kp",           NeedleInsertionRobot::s_default_kP[0] );
-        long  x_ki    = this->declare_parameter( "axis.x.ki",           NeedleInsertionRobot::s_default_kI[0] );
-        long  x_kd    = this->declare_parameter( "axis.x.kd",           NeedleInsertionRobot::s_default_kD[0] );
+        float x_speed   = this->declare_parameter( "axis.x.speed",        NeedleInsertionRobot::s_default_speed[0] );
+        float x_accel   = this->declare_parameter( "axis.x.acceleration", NeedleInsertionRobot::s_default_acceleration[0] );
+        float x_decel   = this->declare_parameter( "axis.x.deceleration", NeedleInsertionRobot::s_default_deceleration[0] );
+        long  x_kp      = this->declare_parameter( "axis.x.kp",           NeedleInsertionRobot::s_default_kP[0] );
+        long  x_ki      = this->declare_parameter( "axis.x.ki",           NeedleInsertionRobot::s_default_kI[0] );
+        long  x_kd      = this->declare_parameter( "axis.x.kd",           NeedleInsertionRobot::s_default_kD[0] );
+        bool  x_lim_act = this->declare_parameter( "axis.x.limit.active", false );
+        float x_lim_min = this->declare_parameter( "axis.x.limit.min",    RobotLimit::MIN );
+        float x_lim_max = this->declare_parameter( "axis.x.limit.max",    RobotLimit::MAX );
 
-        float y_speed = this->declare_parameter( "axis.y.speed",        NeedleInsertionRobot::s_default_speed[1] );
-        float y_accel = this->declare_parameter( "axis.y.acceleration", NeedleInsertionRobot::s_default_acceleration[1] );
-        float y_decel = this->declare_parameter( "axis.y.deceleration", NeedleInsertionRobot::s_default_deceleration[1] );
-        long  y_kp    = this->declare_parameter( "axis.y.kp",           NeedleInsertionRobot::s_default_kP[1] );
-        long  y_ki    = this->declare_parameter( "axis.y.ki",           NeedleInsertionRobot::s_default_kI[1] );
-        long  y_kd    = this->declare_parameter( "axis.y.kd",           NeedleInsertionRobot::s_default_kD[1] );
+        float y_speed   = this->declare_parameter( "axis.y.speed",        NeedleInsertionRobot::s_default_speed[1] );
+        float y_accel   = this->declare_parameter( "axis.y.acceleration", NeedleInsertionRobot::s_default_acceleration[1] );
+        float y_decel   = this->declare_parameter( "axis.y.deceleration", NeedleInsertionRobot::s_default_deceleration[1] );
+        long  y_kp      = this->declare_parameter( "axis.y.kp",           NeedleInsertionRobot::s_default_kP[1] );
+        long  y_ki      = this->declare_parameter( "axis.y.ki",           NeedleInsertionRobot::s_default_kI[1] );
+        long  y_kd      = this->declare_parameter( "axis.y.kd",           NeedleInsertionRobot::s_default_kD[1] );
+        bool  y_lim_act = this->declare_parameter( "axis.y.limit.active", false );
+        float y_lim_min = this->declare_parameter( "axis.y.limit.min",    RobotLimit::MIN );
+        float y_lim_max = this->declare_parameter( "axis.y.limit.max",    RobotLimit::MAX );
 
-        float z_speed = this->declare_parameter( "axis.z.speed",        NeedleInsertionRobot::s_default_speed[2] );
-        float z_accel = this->declare_parameter( "axis.z.acceleration", NeedleInsertionRobot::s_default_acceleration[2] );
-        float z_decel = this->declare_parameter( "axis.z.deceleration", NeedleInsertionRobot::s_default_deceleration[2] );
-        long  z_kp    = this->declare_parameter( "axis.z.kp",           NeedleInsertionRobot::s_default_kP[2] );
-        long  z_ki    = this->declare_parameter( "axis.z.ki",           NeedleInsertionRobot::s_default_kI[2] );
-        long  z_kd    = this->declare_parameter( "axis.z.kd",           NeedleInsertionRobot::s_default_kD[2] );
+        float z_speed   = this->declare_parameter( "axis.z.speed",        NeedleInsertionRobot::s_default_speed[2] );
+        float z_accel   = this->declare_parameter( "axis.z.acceleration", NeedleInsertionRobot::s_default_acceleration[2] );
+        float z_decel   = this->declare_parameter( "axis.z.deceleration", NeedleInsertionRobot::s_default_deceleration[2] );
+        long  z_kp      = this->declare_parameter( "axis.z.kp",           NeedleInsertionRobot::s_default_kP[2] );
+        long  z_ki      = this->declare_parameter( "axis.z.ki",           NeedleInsertionRobot::s_default_kI[2] );
+        long  z_kd      = this->declare_parameter( "axis.z.kd",           NeedleInsertionRobot::s_default_kD[2] );
+        bool  z_lim_act = this->declare_parameter( "axis.z.limit.active", false );
+        float z_lim_min = this->declare_parameter( "axis.z.limit.min",    RobotLimit::MIN );
+        float z_lim_max = this->declare_parameter( "axis.z.limit.max",    RobotLimit::MAX );
 
-        float ls_speed = this->declare_parameter( "axis.linear_stage.speed",        NeedleInsertionRobot::s_default_speed[3] );
-        float ls_accel = this->declare_parameter( "axis.linear_stage.acceleration", NeedleInsertionRobot::s_default_acceleration[3] );
-        float ls_decel = this->declare_parameter( "axis.linear_stage.deceleration", NeedleInsertionRobot::s_default_deceleration[3] );
-        long  ls_kp    = this->declare_parameter( "axis.linear_stage.kp",           NeedleInsertionRobot::s_default_kP[3] );
-        long  ls_ki    = this->declare_parameter( "axis.linear_stage.ki",           NeedleInsertionRobot::s_default_kI[3] );
-        long  ls_kd    = this->declare_parameter( "axis.linear_stage.kd",           NeedleInsertionRobot::s_default_kD[3] );
+        float ls_speed   = this->declare_parameter( "axis.linear_stage.speed",        NeedleInsertionRobot::s_default_speed[3] );
+        float ls_accel   = this->declare_parameter( "axis.linear_stage.acceleration", NeedleInsertionRobot::s_default_acceleration[3] );
+        float ls_decel   = this->declare_parameter( "axis.linear_stage.deceleration", NeedleInsertionRobot::s_default_deceleration[3] );
+        long  ls_kp      = this->declare_parameter( "axis.linear_stage.kp",           NeedleInsertionRobot::s_default_kP[3] );
+        long  ls_ki      = this->declare_parameter( "axis.linear_stage.ki",           NeedleInsertionRobot::s_default_kI[3] );
+        long  ls_kd      = this->declare_parameter( "axis.linear_stage.kd",           NeedleInsertionRobot::s_default_kD[3] );
+        bool  ls_lim_act = this->declare_parameter( "axis.linear_stage.limit.active", false );
+        float ls_lim_min = this->declare_parameter( "axis.linear_stage.limit.min",    RobotLimit::MIN );
+        float ls_lim_max = this->declare_parameter( "axis.linear_stage.limit.max",    RobotLimit::MAX );
 
         float speed[] = { x_speed, y_speed, z_speed, ls_speed };
         float accel[] = { x_accel, y_accel, z_accel, ls_accel };
@@ -85,7 +97,13 @@ public:
         long     ki[] = { x_ki   , y_ki   , z_ki   , ls_ki    };
         long     kd[] = { x_kd   , y_kd   , z_kd   , ls_kd    };
         
-        update_robotParams( speed, accel, decel, kp, ki, kd); // set Robot control parameters   
+        update_robotParams( speed, accel, decel, kp, ki, kd); // set Robot control parameters
+        m_robot->setLimits({
+            { 0, { x_lim_min,  x_lim_max,  x_lim_act  } }, 
+            { 1, { y_lim_min,  y_lim_max,  y_lim_act  } },
+            { 2, { z_lim_min,  z_lim_max,  z_lim_act  } },
+            { 3, { ls_lim_min, ls_lim_max, ls_lim_act } }
+        });  // set the robot limits
 
         // this->add_on_set_parameters_callback( ROBOT_BIND_FN(service_onSetParamsCallback) ); // DO NOT USE
 
@@ -112,7 +130,7 @@ public:
         m_pub_AxStateLS = this->create_publisher<Bool>("axis/state/on/linear_stage", 10);
 
         // initialize services
-        m_srv_abort         = this->create_service<Trigger>("abort",                    ROBOT_BIND_SERVICE(service_abort));
+        m_srv_abort         = this->create_service<Trigger>("abort",                          ROBOT_BIND_SERVICE(service_abort));
         m_srv_toggleAxisX   = this->create_service<Trigger>("axis/state/toggle/x",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 0));
         m_srv_toggleAxisY   = this->create_service<Trigger>("axis/state/toggle/y",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 1));
         m_srv_toggleAxisZ   = this->create_service<Trigger>("axis/state/toggle/z",            ROBOT_BIND_AXIS_SERVICE(Trigger, service_toggleAxis, 2));
@@ -125,7 +143,7 @@ public:
 
         // create timers
         m_positionTimer  = this->create_wall_timer( 10ms, ROBOT_BIND_PUBLISHER(publish_CurrentPosition) );
-        m_stateTimer     = this->create_wall_timer( 20ms, ROBOT_BIND_PUBLISHER(publish_CurrentState));
+        m_stateTimer     = this->create_wall_timer( 20ms, ROBOT_BIND_PUBLISHER(publish_CurrentState) );
         
         RCLCPP_INFO(this->get_logger(), "Robot initialized and ready for operation.");
         
@@ -163,6 +181,7 @@ private:
         long kp[] = {NULL_LONG_AXIS, NULL_LONG_AXIS, NULL_LONG_AXIS, NULL_LONG_AXIS};
         long ki[] = {NULL_LONG_AXIS, NULL_LONG_AXIS, NULL_LONG_AXIS, NULL_LONG_AXIS};
         long kd[] = {NULL_LONG_AXIS, NULL_LONG_AXIS, NULL_LONG_AXIS, NULL_LONG_AXIS};
+        std::map<size_t, RobotLimit> limits;
 
         // TODO: need to add functionality for changing speed and gain params adaptively
         for (const auto& param : parameters )
@@ -186,6 +205,15 @@ private:
             else if(param.get_name().compare("axis.x.kd"))
                 kd[0] = param.as_int();
 
+            else if(param.get_name().compare("axis.x.limit.active"))
+                limits[0].active = param.as_bool();
+
+            else if(param.get_name().compare("axis.x.limit.min"))
+                limits[0].min = param.as_double();
+
+            else if(param.get_name().compare("axis.x.limit.max"))
+                limits[0].max = param.as_double();
+
             // axis: y
             else if(param.get_name().compare("axis.y.speed"))
                 speed[1] = param.as_double();
@@ -205,6 +233,15 @@ private:
             else if(param.get_name().compare("axis.y.kd"))
                 kd[1] = param.as_int();
 
+            else if(param.get_name().compare("axis.y.limit.active"))
+                limits[1].active = param.as_bool();
+
+            else if(param.get_name().compare("axis.y.limit.min"))
+                limits[1].min = param.as_double();
+
+            else if(param.get_name().compare("axis.y.limit.max"))
+                limits[1].max = param.as_double();
+
             // axis: z
             else if(param.get_name().compare("axis.z.speed"))
                 speed[2] = param.as_double();
@@ -223,6 +260,15 @@ private:
 
             else if(param.get_name().compare("axis.z.kd"))
                 kd[2] = param.as_int();
+
+            else if(param.get_name().compare("axis.z.limit.active"))
+                limits[2].active = param.as_bool();
+
+            else if(param.get_name().compare("axis.z.limit.min"))
+                limits[2].min = param.as_double();
+
+            else if(param.get_name().compare("axis.z.limit.max"))
+                limits[2].max = param.as_double();
                 
             // axis: linear_stage
             else if(param.get_name().compare("axis.linear_stage.speed"))
@@ -242,6 +288,15 @@ private:
                 
             else if(param.get_name().compare("axis.linear_stage.kd"))
                 kd[3] = param.as_int();
+
+            else if(param.get_name().compare("axis.linear_stage.limit.active"))
+                limits[4].active = param.as_bool();
+
+            else if(param.get_name().compare("axis.linear_stage.limit.min"))
+                limits[4].min = param.as_double();
+
+            else if(param.get_name().compare("axis.linear_stage.limit.max"))
+                limits[4].max = param.as_double();
             
             else
                 result.successful = false;
@@ -250,7 +305,11 @@ private:
 
         // update the robot parameters
         if (result.successful)
+        {
             update_robotParams(speed, accel, decel, kp, ki, kd); 
+            update_robotLimits(limits);
+
+        } // if
 
         return result;
 
@@ -312,7 +371,7 @@ private:
 
     void service_zeroAxis(int axis, const Trigger::Request::SharedPtr req, const Trigger::Response::SharedPtr res)
     {
-        bool command_positions[ROBOT_NUM_AXES] = { false, false, false, false };
+        bool command_axes[ROBOT_NUM_AXES] = { false, false, false, false };
         std::string axisName;
         
         switch(axis)
@@ -339,11 +398,24 @@ private:
                 
         } // switch
 
-        command_positions[axis] = true;
+        command_axes[axis] = true;
 
-        RCLCPP_INFO(this->get_logger(), "Zeroing axis %s.", axisName.c_str());
+        try
+        {
+            RCLCPP_INFO(this->get_logger(), "Zeroing axis %s.", axisName.c_str());
+            m_robot->zeroAxes( command_axes );
+            res->success = true;
+        }
+        catch (GReturn e)
+        { 
+            char message[100];
+            sprintf(message, "Error zeroing axis %s. Error Code %d", axisName.c_str(), e);
+            RCLCPP_ERROR(this->get_logger(), message);
+            res->success = false;
+            res->message = message;
+        }
 
-        res->success = true;
+        
 
     } // service_zeroAxis
 
@@ -506,6 +578,48 @@ private:
         m_pub_AxMovingLS -> publish( msg_moving_ls ); 
 
     } // publish_CurrentState
+
+    void update_robotLimits(const std::map<size_t, RobotLimit>& limits)
+    {
+        m_robot->setLimits(limits);
+
+        // iterate through to get the name
+        for (const auto& kv : limits)
+        {
+            const size_t& axis = kv.first;
+            const char* axis_name;
+            switch(axis)
+            {
+                case 0:
+                    axis_name = "X'";
+                    break;
+
+                case 1:
+                    axis_name = "Y'";
+                    break;
+
+                case 2:
+                    axis_name = "Z'";
+                    break;
+
+                case 3:
+                    axis_name = "LS'";
+                    break;
+
+                default:
+                    RCLCPP_WARN(this->get_logger(), "Update Limit: Invalid axis: %d", axis);
+                    continue;
+                
+            } // switch
+
+            const RobotLimit& limit = m_robot->getLimit(axis);
+
+            RCLCPP_INFO( this->get_logger(), "Updated limits of axis '%s' to: Active=%d, Min=%.3f, Max=%.3f",
+                        axis_name, limit.active, limit.min, limit.max );
+
+        } // for
+
+    } // update_robotLimits
 
     void update_robotParams(float speed[ROBOT_NUM_AXES],
                             float accel[ROBOT_NUM_AXES],

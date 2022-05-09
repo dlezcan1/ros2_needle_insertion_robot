@@ -18,11 +18,6 @@ const long NeedleInsertionRobot::s_default_kD[ROBOT_NUM_AXES];
 const bool NeedleInsertionRobot::s_axes[GALIL_NUM_AXES];
 const float NeedleInsertionRobot::s_countsPerDistance[ROBOT_NUM_AXES];
 
-NeedleInsertionRobot::NeedleInsertionRobot()
-{
-    NeedleInsertionRobot(DEFAULT_GALIL_IP);
-    
-} // default constructor
 
 NeedleInsertionRobot::NeedleInsertionRobot(GCStringIn ipAddress) : m_galilController(std::make_shared<GalilController>(ipAddress))
 {
@@ -38,7 +33,15 @@ NeedleInsertionRobot::NeedleInsertionRobot(GCStringIn ipAddress) : m_galilContro
     setPID_P(s_default_kP);
     setPID_I(s_default_kI);
     setPID_D(s_default_kD);
-    
+
+    // set limits
+    std::array<RobotLimit, ROBOT_NUM_AXES> limits;
+    for (int i = 0; i < limits.size(); i++)
+        limits[i] = RobotLimit(false); // empty robot limit non-active
+
+    // for
+    setLimits(limits); 
+
 } // constructor with IP address
 
 NeedleInsertionRobot::~NeedleInsertionRobot()
@@ -69,6 +72,36 @@ float* NeedleInsertionRobot::getPosition(const bool axes[ROBOT_NUM_AXES], const 
     
     
 } // NeedleInsertionRobot::getPosition
+
+float* NeedleInsertionRobot::limitMotion( const float axes[ROBOT_NUM_AXES], bool absolute ) const
+{
+    float* axes_limited = new float[ROBOT_NUM_AXES];
+
+    // get absolute positioning
+    if (absolute)
+    {
+        for (int i = 0; i < ROBOT_NUM_AXES; i++) // limit the motion
+             axes_limited[i] = m_limits[i].active ? m_limits[i].limit( axes[i] ) : axes[i];
+
+    } // if
+    else
+    {
+        // get the current positions
+        bool axes_check[ROBOT_NUM_AXES] = {true, true, true, true};
+        float* axes_current = getPosition(axes_check, true);
+        
+        // get the 
+        for(int i = 0; i < ROBOT_NUM_AXES; i++)
+        {
+            axes_limited[i] = m_limits[i].active ? 
+                                m_limits[i].limit( axes[i] + axes_current[i] ) - axes_current[i] : 
+                                axes[i];
+        } // for
+    } // else
+    
+    return axes_limited;
+
+} // NeedleInsertionRobot::limitMotion
 
 void NeedleInsertionRobot::motorsOn(const bool axes[ROBOT_NUM_AXES])
 {
@@ -101,7 +134,8 @@ void NeedleInsertionRobot::motorsOff(const bool axes[ROBOT_NUM_AXES])
 void NeedleInsertionRobot::moveAxesAbsolute(const float axes[ROBOT_NUM_AXES]) const
 {
     // convert distance measurements to counts
-    long* counts_axes = distanceToCounts(axes);
+    float* axes_limited = limitMotion( axes, true ); // limit the motion
+    long* counts_axes = distanceToCounts( axes_limited );
     
     // remove any axes that don't move
     for(int i = 0; i < ROBOT_NUM_AXES; i++)
@@ -120,7 +154,8 @@ void NeedleInsertionRobot::moveAxesAbsolute(const float axes[ROBOT_NUM_AXES]) co
 void NeedleInsertionRobot::moveAxesRelative(const float axes[ROBOT_NUM_AXES]) const
 {
     // convert distance measurements to counts
-    long* counts_axes = distanceToCounts(axes);
+    float* axes_limited = limitMotion( axes, false ); // limit the motion
+    long* counts_axes = distanceToCounts( axes_limited );
 
     // remove any axes that don't move
     for(int i = 0; i < ROBOT_NUM_AXES; i++)
@@ -194,6 +229,76 @@ void NeedleInsertionRobot::setSpeed(const float sp_axes[ROBOT_NUM_AXES]) const
     m_galilController->setSpeed(gc_axes);
     
 } //NeedleInsertionRobot::setSpeed
+
+std::array<bool, ROBOT_NUM_AXES> NeedleInsertionRobot::setLimitsActive ( std::array<bool, ROBOT_NUM_AXES> actives )
+{
+    std::array<bool, ROBOT_NUM_AXES> current_actives;
+
+    // update the current limit actives
+    for(int i = 0; i < m_limits.size(); i++)
+        m_limits[i].active = actives[i];
+
+    // set the current active return values
+    for(int i = 0; i < m_limits.size(); i++)
+        current_actives[i] = m_limits[i].active;
+
+    return current_actives;
+} // NeedleInsetionRobot::setLimitsActive
+
+std::array<bool, ROBOT_NUM_AXES> NeedleInsertionRobot::setLimitsActive ( std::vector< std::pair<size_t, bool> > actives )
+{
+    std::array<bool, ROBOT_NUM_AXES> current_actives;
+
+    for (auto kv : actives)
+    {
+        // unpack the pair
+        size_t index = kv.first;
+        bool active  = kv.second;
+
+        // ensure no out-of-bounds
+        if (0 <= index && index < m_limits.size())
+            m_limits[index].active = active;
+
+    } // for
+
+    // set the current active return values
+    for(int i = 0; i < m_limits.size(); i++)
+        current_actives[i] = m_limits[i].active;
+
+    return current_actives;
+} // NeedleInsetionRobot::setLimitsActive
+
+void NeedleInsertionRobot::setLimits( std::initializer_list< std::pair<size_t, RobotLimit> > limits)
+{
+    for (const auto& kv : limits)
+    {
+        // unpack the pair
+        const size_t& index     = kv.first;
+        const RobotLimit& limit = kv.second;
+
+        // ensure safe-indexing
+        if (0 <= index && index < m_limits.size())
+            m_limits[index] = limit;
+
+    } // for
+
+} // NeedleInsertionRobot::setLimits
+
+void NeedleInsertionRobot::setLimits( std::map<size_t, RobotLimit> limits)
+{
+    for (const auto& kv : limits)
+    {
+        // unpack the pair
+        const size_t& index     = kv.first;
+        const RobotLimit& limit = kv.second;
+
+        // ensure safe-indexing
+        if (0 <= index && index < m_limits.size())
+            m_limits[index] = limit;
+
+    } // for
+
+} // NeedleInsertionRobot::setLimits
 
 /* Axes commands */
 void NeedleInsertionRobot::stopAxes(const bool axes[ROBOT_NUM_AXES]) const
