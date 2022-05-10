@@ -81,7 +81,9 @@ float* NeedleInsertionRobot::limitMotion( const float axes[ROBOT_NUM_AXES], bool
     if (absolute)
     {
         for (int i = 0; i < ROBOT_NUM_AXES; i++) // limit the motion
-             axes_limited[i] = m_limits[i].active ? m_limits[i].limit( axes[i] ) : axes[i];
+             axes_limited[i] = m_limits[i].active && !isNullAxis(axes[i]) ? 
+                                m_limits[i].limit( axes[i] ) : 
+                                axes[i];
 
     } // if
     else
@@ -93,7 +95,7 @@ float* NeedleInsertionRobot::limitMotion( const float axes[ROBOT_NUM_AXES], bool
         // get the 
         for(int i = 0; i < ROBOT_NUM_AXES; i++)
         {
-            axes_limited[i] = m_limits[i].active ? 
+            axes_limited[i] = m_limits[i].active && !isNullAxis(axes[i]) ? 
                                 m_limits[i].limit( axes[i] + axes_current[i] ) - axes_current[i] : 
                                 axes[i];
         } // for

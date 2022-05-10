@@ -20,7 +20,7 @@
 #include "NeedleInsertionRobot.h"
 
 // helpful macros
-#define ROBOT_BIND_AXIS_CMD_CB(msg_t, x, axis) (std::function<void(const msg_t)>) std::bind(&NeedleInsertionRobotNode::x, this, axis, std::placeholders::_1)
+#define ROBOT_BIND_AXIS_CMD_CB(msg_t, x, axis, absolute) (std::function<void(const msg_t)>) std::bind(&NeedleInsertionRobotNode::x, this, axis, std::placeholders::_1, absolute)
 #define ROBOT_BIND_FN(x) std::bind(&NeedleInsertionRobotNode::x, this, std::placeholders::_1)
 #define ROBOT_BIND_PUBLISHER(x) std::bind(&NeedleInsertionRobotNode::x, this)
 #define ROBOT_BIND_SERVICE(x) std::bind(&NeedleInsertionRobotNode::x, this, std::placeholders::_1, std::placeholders::_2)
@@ -30,6 +30,8 @@
 using namespace std::chrono_literals;
 using std_srvs::srv::Trigger;
 using std_msgs::msg::Bool;
+
+const float RobotLimit::MIN, RobotLimit::MAX;
 
 class NeedleInsertionRobotNode : public rclcpp::Node
 {
@@ -105,13 +107,23 @@ public:
             { 3, { ls_lim_min, ls_lim_max, ls_lim_act } }
         });  // set the robot limits
 
-        // this->add_on_set_parameters_callback( ROBOT_BIND_FN(service_onSetParamsCallback) ); // DO NOT USE
+        m_paramCallbackHandle = this->add_on_set_parameters_callback( ROBOT_BIND_FN(service_onSetParamsCallback) ); 
 
         // initalize subscribers
-        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("axis/command/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0));
-        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("axis/command/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1));
-        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("axis/command/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2));
-        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("axis/command/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3));
+        m_sub_AxCommandX  = this->create_subscription<AxisMsg_t>("axis/command/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0, false));
+        m_sub_AxCommandY  = this->create_subscription<AxisMsg_t>("axis/command/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1, false));
+        m_sub_AxCommandZ  = this->create_subscription<AxisMsg_t>("axis/command/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2, false));
+        m_sub_AxCommandLS = this->create_subscription<AxisMsg_t>("axis/command/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3, false));
+
+        m_sub_AxAbsCommandX  = this->create_subscription<AxisMsg_t>("axis/command/absolute/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0, true));
+        m_sub_AxAbsCommandY  = this->create_subscription<AxisMsg_t>("axis/command/absolute/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1, true));
+        m_sub_AxAbsCommandZ  = this->create_subscription<AxisMsg_t>("axis/command/absolute/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2, true));
+        m_sub_AxAbsCommandLS = this->create_subscription<AxisMsg_t>("axis/command/absolute/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3, true));
+
+        m_sub_AxRelCommandX  = this->create_subscription<AxisMsg_t>("axis/command/relative/x",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 0, false));
+        m_sub_AxRelCommandY  = this->create_subscription<AxisMsg_t>("axis/command/relative/y",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 1, false));
+        m_sub_AxRelCommandZ  = this->create_subscription<AxisMsg_t>("axis/command/relative/z",            1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 2, false));
+        m_sub_AxRelCommandLS = this->create_subscription<AxisMsg_t>("axis/command/relative/linear_stage", 1, ROBOT_BIND_AXIS_CMD_CB(AxisMsg_t::SharedPtr, topic_callbackAxisCommand, 3, false));
         
         // initalize publishers
         m_pub_AxPosX  = this->create_publisher<AxisMsg_t>("axis/position/x",            10);
@@ -186,117 +198,178 @@ private:
         // TODO: need to add functionality for changing speed and gain params adaptively
         for (const auto& param : parameters )
         {
+            RCLCPP_INFO( this->get_logger(), "Parameter update name is: %s", param.get_name().c_str() );
             // axis: x
-            if(param.get_name().compare("axis.x.speed"))
+            if(param.get_name().compare("axis.x.speed") == 0)
                 speed[0] = param.as_double();
             
-            else if(param.get_name().compare("axis.x.acceleration"))
+            else if(param.get_name().compare("axis.x.acceleration") == 0)
                 accel[0] = param.as_double();
 
-            else if(param.get_name().compare("axis.x.deceleration"))
+            else if(param.get_name().compare("axis.x.deceleration") == 0)
                 decel[0] = param.as_double();
 
-            else if(param.get_name().compare("axis.x.kp"))
+            else if(param.get_name().compare("axis.x.kp") == 0)
                 kp[0] = param.as_int();
 
-            else if(param.get_name().compare("axis.x.ki"))
+            else if(param.get_name().compare("axis.x.ki") == 0)
                 ki[0] = param.as_int();
                 
-            else if(param.get_name().compare("axis.x.kd"))
+            else if(param.get_name().compare("axis.x.kd") == 0)
                 kd[0] = param.as_int();
 
-            else if(param.get_name().compare("axis.x.limit.active"))
+            else if(param.get_name().compare("axis.x.limit.active") == 0)
+            {
+                if (limits.find(0) == limits.end())
+                    limits[0] = RobotLimit(m_robot->getLimit(0));
+
                 limits[0].active = param.as_bool();
 
-            else if(param.get_name().compare("axis.x.limit.min"))
+            } // else if
+
+            else if(param.get_name().compare("axis.x.limit.min") == 0)
+            {
+                if (limits.find(0) == limits.end())
+                    limits[0] = RobotLimit(m_robot->getLimit(0));
+
                 limits[0].min = param.as_double();
 
-            else if(param.get_name().compare("axis.x.limit.max"))
+            } // else if
+
+            else if(param.get_name().compare("axis.x.limit.max") == 0)
+            {
+                if (limits.find(0) == limits.end())
+                    limits[0] = RobotLimit(m_robot->getLimit(0));
+
                 limits[0].max = param.as_double();
 
+            } // else if
+
             // axis: y
-            else if(param.get_name().compare("axis.y.speed"))
+            else if(param.get_name().compare("axis.y.speed") == 0)
                 speed[1] = param.as_double();
             
-            else if(param.get_name().compare("axis.y.acceleration"))
+            else if(param.get_name().compare("axis.y.acceleration") == 0)
                 accel[1] = param.as_double();
 
-            else if(param.get_name().compare("axis.y.deceleration"))
+            else if(param.get_name().compare("axis.y.deceleration") == 0)
                 decel[1] = param.as_double();
 
-            else if(param.get_name().compare("axis.y.kp"))
+            else if(param.get_name().compare("axis.y.kp") == 0)
                 kp[1] = param.as_int();
 
-            else if(param.get_name().compare("axis.y.ki"))
+            else if(param.get_name().compare("axis.y.ki") == 0)
                 ki[1] = param.as_int();
 
-            else if(param.get_name().compare("axis.y.kd"))
+            else if(param.get_name().compare("axis.y.kd") == 0)
                 kd[1] = param.as_int();
 
-            else if(param.get_name().compare("axis.y.limit.active"))
+            else if(param.get_name().compare("axis.y.limit.active") == 0)
+            {
+                if (limits.find(1) == limits.end())
+                    limits[1] = RobotLimit(m_robot->getLimit(1));
+                    
                 limits[1].active = param.as_bool();
 
-            else if(param.get_name().compare("axis.y.limit.min"))
+            } // else if
+
+            else if(param.get_name().compare("axis.y.limit.min") == 0)
+            {
+                if (limits.find(1) == limits.end())
+                    limits[1] = RobotLimit(m_robot->getLimit(1));
+                    
                 limits[1].min = param.as_double();
 
-            else if(param.get_name().compare("axis.y.limit.max"))
+            } // else if
+
+            else if(param.get_name().compare("axis.y.limit.max") == 0)
+            {
+                if (limits.find(1) == limits.end())
+                    limits[1] = RobotLimit(m_robot->getLimit(1));
+                    
                 limits[1].max = param.as_double();
 
+            } // else if
+
             // axis: z
-            else if(param.get_name().compare("axis.z.speed"))
+            else if(param.get_name().compare("axis.z.speed") == 0)
                 speed[2] = param.as_double();
             
-            else if(param.get_name().compare("axis.z.acceleration"))
+            else if(param.get_name().compare("axis.z.acceleration") == 0)
                 accel[2] = param.as_double();
 
-            else if(param.get_name().compare("axis.z.deceleration"))
-                decel[2] = param.as_double();
-
-            else if(param.get_name().compare("axis.z.kp"))
-                kp[2] = param.as_int();
-                
-            else if(param.get_name().compare("axis.z.ki"))
-                ki[2] = param.as_int();
-
-            else if(param.get_name().compare("axis.z.kd"))
-                kd[2] = param.as_int();
-
-            else if(param.get_name().compare("axis.z.limit.active"))
+            else if(param.get_name().compare("axis.z.limit.active") == 0)
+            {
+                if (limits.find(2) == limits.end())
+                    limits[2] = RobotLimit(m_robot->getLimit(2));
+                    
                 limits[2].active = param.as_bool();
 
-            else if(param.get_name().compare("axis.z.limit.min"))
+            } // else if
+
+            else if(param.get_name().compare("axis.z.limit.min") == 0)
+            {
+                if (limits.find(2) == limits.end())
+                    limits[2] = RobotLimit(m_robot->getLimit(2));
+                    
                 limits[2].min = param.as_double();
 
-            else if(param.get_name().compare("axis.z.limit.max"))
+            } // else if
+
+            else if(param.get_name().compare("axis.z.limit.max") == 0)
+            {
+                if (limits.find(2) == limits.end())
+                    limits[2] = RobotLimit(m_robot->getLimit(2));
+                    
                 limits[2].max = param.as_double();
+
+            } // else if
                 
             // axis: linear_stage
-            else if(param.get_name().compare("axis.linear_stage.speed"))
+            else if(param.get_name().compare("axis.linear_stage.speed") == 0)
                 speed[3] = param.as_double();
           
-            else if(param.get_name().compare("axis.linear_stage.acceleration"))
+            else if(param.get_name().compare("axis.linear_stage.acceleration") == 0)
                 accel[3] = param.as_double();
                 
-            else if(param.get_name().compare("axis.linear_stage.deceleration"))
+            else if(param.get_name().compare("axis.linear_stage.deceleration") == 0)
                 decel[3] = param.as_double();
                 
-            else if(param.get_name().compare("axis.linear_stage.kp"))
+            else if(param.get_name().compare("axis.linear_stage.kp") == 0)
                 kp[3] = param.as_int();
                 
-            else if(param.get_name().compare("axis.linear_stage.ki"))
+            else if(param.get_name().compare("axis.linear_stage.ki") == 0)
                 ki[3] = param.as_int();
                 
-            else if(param.get_name().compare("axis.linear_stage.kd"))
+            else if(param.get_name().compare("axis.linear_stage.kd") == 0)
                 kd[3] = param.as_int();
 
-            else if(param.get_name().compare("axis.linear_stage.limit.active"))
-                limits[4].active = param.as_bool();
+            else if(param.get_name().compare("axis.linear_stage.limit.active") == 0)
+            {
+                if (limits.find(3) == limits.end())
+                    limits[3] = RobotLimit(m_robot->getLimit(3));
+                    
+                limits[3].active = param.as_bool();
 
-            else if(param.get_name().compare("axis.linear_stage.limit.min"))
-                limits[4].min = param.as_double();
+            } // else if
 
-            else if(param.get_name().compare("axis.linear_stage.limit.max"))
-                limits[4].max = param.as_double();
+            else if(param.get_name().compare("axis.linear_stage.limit.min") == 0)
+            {
+                if (limits.find(3) == limits.end())
+                    limits[3] = RobotLimit(m_robot->getLimit(3));
+                    
+                limits[3].min = param.as_double();
+
+            } // else if
+
+            else if(param.get_name().compare("axis.linear_stage.limit.max") == 0)
+            {
+                if (limits.find(3) == limits.end())
+                    limits[3] = RobotLimit(m_robot->getLimit(3));
+                    
+                limits[3].max = param.as_double();
+
+            } // else if
             
             else
                 result.successful = false;
@@ -308,6 +381,7 @@ private:
         {
             update_robotParams(speed, accel, decel, kp, ki, kd); 
             update_robotLimits(limits);
+            RCLCPP_INFO(this->get_logger(), "Limit map size: %d", limits.size());
 
         } // if
 
@@ -421,7 +495,7 @@ private:
 
 
     /* Subscriber callbacks */
-    void topic_callbackAxisCommand(int axis, const AxisMsg_t::SharedPtr msg)
+    void topic_callbackAxisCommand(int axis, const AxisMsg_t::SharedPtr msg, bool absolute)
     {
         std::string axisName;
         
@@ -456,7 +530,7 @@ private:
         {
             RCLCPP_INFO(this->get_logger(), "Commanding axis '%s' for %.2f mm", axisName.c_str(), cmd_pos);
             if (m_robot->getMotorsOn()[axis])
-                m_robot->moveAxes(command_positions, false);
+                m_robot->moveAxes(command_positions, absolute);
 
             else
                 RCLCPP_WARN(this->get_logger(), "Axis '%s' is not on! Turn the axis on before moving.", axisName.c_str());
@@ -655,7 +729,17 @@ private: // members
     rclcpp::Subscription<AxisMsg_t>::SharedPtr m_sub_AxCommandX, 
                                                m_sub_AxCommandY,
                                                m_sub_AxCommandZ, 
-                                               m_sub_AxCommandLS;
+                                               m_sub_AxCommandLS,
+
+                                               m_sub_AxAbsCommandX, 
+                                               m_sub_AxAbsCommandY,
+                                               m_sub_AxAbsCommandZ, 
+                                               m_sub_AxAbsCommandLS,
+                                               
+                                               m_sub_AxRelCommandX,
+                                               m_sub_AxRelCommandY,
+                                               m_sub_AxRelCommandZ,
+                                               m_sub_AxRelCommandLS;
     
     // publishers
     rclcpp::Publisher<AxisMsg_t>::SharedPtr m_pub_AxPosX, 
@@ -685,6 +769,9 @@ private: // members
                                         m_srv_zeroAxisY,
                                         m_srv_zeroAxisZ,
                                         m_srv_zeroAxisLS;
+
+    // callbacks
+    OnSetParametersCallbackHandle::SharedPtr m_paramCallbackHandle;
                                         
 }; // class: NeedleInsertionRobotNode
 

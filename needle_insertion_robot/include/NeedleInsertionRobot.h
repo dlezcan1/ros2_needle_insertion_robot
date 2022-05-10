@@ -22,8 +22,8 @@ inline static bool isNullAxis(float axis){ return axis == NULL_FLOAT_AXIS; }
 
 struct RobotLimit
 {
-    const static float MIN = std::numeric_limits<float>::lowest(),
-                       MAX = std::numeric_limits<float>::max();
+    constexpr static const float MIN = std::numeric_limits<float>::lowest(), 
+                                 MAX = std::numeric_limits<float>::max();
     bool active = true; // whether limit is active or not
     float min = MIN, max = MAX;
 
@@ -32,6 +32,7 @@ struct RobotLimit
     RobotLimit(bool active) : active(active) {}
     RobotLimit(float min, float max) : RobotLimit( min, max, true ) {}
     RobotLimit(float min, float max, bool active) : min(min), max(max), active(active) {}
+    RobotLimit(const RobotLimit& limit) = default;
 
     inline float limit(const float& position) const
     {
