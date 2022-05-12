@@ -26,7 +26,7 @@ inline static bool isNullAxis(long axis) { return (axis == NULL_LONG_AXIS); }
 
 // Helper functions for command preparation
 template <typename T>
-std::string commaSeparateValues(std::vector<T> values)
+std::string commaSeparateValues(const std::vector<T>& values)
 {
     std::string csv = "";
     for (int i = 0; i < values.size(); i++)
@@ -38,7 +38,7 @@ std::string commaSeparateValues(std::vector<T> values)
 } // commaSeparateValues: vector
 
 template <typename T, std::size_t N>
-std::string commaSeparateValues(std::array<T, N> values)
+std::string commaSeparateValues(const std::array<T, N>& values)
 {
     std::string csv = "";
     for (int i = 0; i < values.size(); i++)
@@ -80,14 +80,14 @@ public:
      @param absolute (bool, Default=false) whether to get the absolute positions or not.
      
      */
-    long* getPosition (bool axes[GALIL_NUM_AXES], bool absolute=false);
+    long* getPosition (const bool axes[GALIL_NUM_AXES], bool absolute=false);
     
     /* Check if motion is complete */
     GCStringOut motionComplete();
     
     // turn on/off the motors
-    GReturn motorsOn(bool axes[GALIL_NUM_AXES]);
-    GReturn motorsOff(bool axes[GALIL_NUM_AXES]);
+    GReturn motorsOn (const bool axes[GALIL_NUM_AXES]);
+    GReturn motorsOff(const bool axes[GALIL_NUM_AXES]);
     
     /**
      Move the axes
@@ -96,37 +96,37 @@ public:
      @param absolute (bool, Default=false) whether to perform absolute movements or not
      
      */
-    GReturn moveAxes(long axes[GALIL_NUM_AXES], bool absolute=false);
-    GReturn moveAxesAbsolute(long axes[GALIL_NUM_AXES]); // absolute move axes
-    GReturn moveAxesRelative(long axes[GALIL_NUM_AXES]); // relative move axes
+    GReturn moveAxes(const long axes[GALIL_NUM_AXES], bool absolute=false);
+    GReturn moveAxesAbsolute(const long axes[GALIL_NUM_AXES]); // absolute move axes
+    GReturn moveAxesRelative(const long axes[GALIL_NUM_AXES]); // relative move axes
     
     /** Set PID constants
      
      */
-    GReturn setPID_P(long kp_axes[GALIL_NUM_AXES]);
-    GReturn setPID_I(long kI_axes[GALIL_NUM_AXES]);
-    GReturn setPID_D(long kd_axes[GALIL_NUM_AXES]);
+    GReturn setPID_P(const long kp_axes[GALIL_NUM_AXES]);
+    GReturn setPID_I(const long kI_axes[GALIL_NUM_AXES]);
+    GReturn setPID_D(const long kd_axes[GALIL_NUM_AXES]);
     
     
     /** Set speed control variables
      
      */
-    GReturn setAcceleration(long ac_axes[GALIL_NUM_AXES]);
-    GReturn setDeceleration(long dc_axes[GALIL_NUM_AXES]);
-    GReturn setSpeed(long sp_axes[GALIL_NUM_AXES]);
+    GReturn setAcceleration(const long ac_axes[GALIL_NUM_AXES]);
+    GReturn setDeceleration(const long dc_axes[GALIL_NUM_AXES]);
+    GReturn setSpeed(const long sp_axes[GALIL_NUM_AXES]);
     
     /** Stop moving axes
      @param axes bool[GALIL_NUM_AXES[] on whether to stop particular axes or not
      */
-    GReturn stopAxes(bool axes[GALIL_NUM_AXES]);
+    GReturn stopAxes(const bool axes[GALIL_NUM_AXES]);
     
     /** Zero specific axes
      @param axes bool[GALIL_NUM_AXES[] on whether to stop particular axes or not
      */
-    GReturn zeroAxes(bool axes[GALIL_NUM_AXES]);
+    GReturn zeroAxes(const bool axes[GALIL_NUM_AXES]);
     
     /** Get the axis Name for each axes */
-    static inline char axisName(unsigned int axis){ return static_cast<char>(65 + axis); }
+    static inline char axisName(const unsigned int axis){ return static_cast<char>(65 + axis); }
     
 private: // members
     GCon m_gc = 0;

@@ -36,7 +36,7 @@ public:
 private: //members
     std::shared_ptr<NeedleInsertionRobot> m_robot;
 
-    const std::array<bool,4> m_robotAxes = {true, true, true, true};     // Robot axes to use (use them all)
+    const std::array<bool, 4> m_robotAxes = {true, true, true, true};     // Robot axes to use (use them all)
     
     // timers
     rclcpp::TimerBase::SharedPtr m_positionTimer, m_stateTimer;

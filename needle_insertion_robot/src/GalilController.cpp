@@ -56,7 +56,7 @@ GCStringOut GalilController::motionComplete()
     
 } // GalilController:: motionComplete
 
-GReturn GalilController::motorsOn(bool axes[GALIL_NUM_AXES])
+GReturn GalilController::motorsOn(const const bool axes[GALIL_NUM_AXES])
 {
     bool any_on = false;
     std::string command = "SH ";
@@ -75,7 +75,7 @@ GReturn GalilController::motorsOn(bool axes[GALIL_NUM_AXES])
     
 } // GalilController::motorsOn
 
-GReturn GalilController::motorsOff(bool axes[GALIL_NUM_AXES])
+GReturn GalilController::motorsOff(const bool axes[GALIL_NUM_AXES])
 {
     bool any_on = false;
     std::string command = "MO ";
@@ -94,7 +94,7 @@ GReturn GalilController::motorsOff(bool axes[GALIL_NUM_AXES])
     
 } // GalilController::motorsOff
 
-GReturn GalilController::moveAxes(long axes[GALIL_NUM_AXES], bool absolute)
+GReturn GalilController::moveAxes(const long axes[GALIL_NUM_AXES], bool absolute)
 {
     if (absolute)
         return moveAxesAbsolute(axes);
@@ -104,7 +104,7 @@ GReturn GalilController::moveAxes(long axes[GALIL_NUM_AXES], bool absolute)
     
 } // GalilController::moveAxes
 
-GReturn GalilController::moveAxesAbsolute(long axes[GALIL_NUM_AXES])
+GReturn GalilController::moveAxesAbsolute(const long axes[GALIL_NUM_AXES])
 {
     // format the command message
     std::string command = "PA " + commaSeparateValues(std::vector<long>(axes, axes + GALIL_NUM_AXES));
@@ -134,7 +134,7 @@ GReturn GalilController::moveAxesAbsolute(long axes[GALIL_NUM_AXES])
     
 } // GalilController::moveAxesAbsolute
 
-GReturn GalilController::moveAxesRelative(long axes[GALIL_NUM_AXES])
+GReturn GalilController::moveAxesRelative(const long axes[GALIL_NUM_AXES])
 {
     // format the command message
     std::string mv_command = "PR " + commaSeparateValues(std::vector<long>(axes, axes + GALIL_NUM_AXES));
@@ -223,7 +223,7 @@ bool* GalilController::getAxesMoving()
 
 } // GalilController::getAxesMoving
 
-long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
+long* GalilController::getPosition(const bool axes[GALIL_NUM_AXES], bool absolute)
 {
     // prepare the command
     std::string command = "";
@@ -305,7 +305,7 @@ long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
 } // GalilController::getPosition
 
 
-GReturn GalilController::setPID_P(long kp_axes[GALIL_NUM_AXES])
+GReturn GalilController::setPID_P(const long kp_axes[GALIL_NUM_AXES])
 {
     std::string command = "KP " + commaSeparateValues(std::vector<long>(kp_axes, kp_axes + GALIL_NUM_AXES));
     
@@ -316,7 +316,7 @@ GReturn GalilController::setPID_P(long kp_axes[GALIL_NUM_AXES])
 } // GalilController::setPID_P
 
 
-GReturn GalilController::setPID_I(long ki_axes[GALIL_NUM_AXES])
+GReturn GalilController::setPID_I(const long ki_axes[GALIL_NUM_AXES])
 {
     std::string command = "KI " + commaSeparateValues(std::vector<long>(ki_axes, ki_axes + GALIL_NUM_AXES));
     
@@ -327,7 +327,7 @@ GReturn GalilController::setPID_I(long ki_axes[GALIL_NUM_AXES])
 } // GalilController::setPID_I
 
 
-GReturn GalilController::setPID_D(long kd_axes[GALIL_NUM_AXES])
+GReturn GalilController::setPID_D(const long kd_axes[GALIL_NUM_AXES])
 {
     std::string command = "KD " + commaSeparateValues(std::vector<long>(kd_axes, kd_axes + GALIL_NUM_AXES));
     
@@ -338,7 +338,7 @@ GReturn GalilController::setPID_D(long kd_axes[GALIL_NUM_AXES])
 } // GalilController::setPID_D
 
 
-GReturn GalilController::setAcceleration(long ac_axes[GALIL_NUM_AXES])
+GReturn GalilController::setAcceleration(const long ac_axes[GALIL_NUM_AXES])
 {
     std::string command = "AC " + commaSeparateValues(std::vector<long>(ac_axes, ac_axes + GALIL_NUM_AXES));
     
@@ -349,7 +349,7 @@ GReturn GalilController::setAcceleration(long ac_axes[GALIL_NUM_AXES])
 } // GalilController::setAcceleration
 
 
-GReturn GalilController::setDeceleration(long dc_axes[GALIL_NUM_AXES])
+GReturn GalilController::setDeceleration(const long dc_axes[GALIL_NUM_AXES])
 {
     std::string command = "DC " + commaSeparateValues(std::vector<long>(dc_axes, dc_axes + GALIL_NUM_AXES));
     
@@ -360,7 +360,7 @@ GReturn GalilController::setDeceleration(long dc_axes[GALIL_NUM_AXES])
 } // GalilController::setDeceleration
 
 
-GReturn GalilController::setSpeed(long sp_axes[GALIL_NUM_AXES])
+GReturn GalilController::setSpeed(const long sp_axes[GALIL_NUM_AXES])
 {
     std::string command = "SP " + commaSeparateValues(std::vector<long>(sp_axes, sp_axes + GALIL_NUM_AXES));
     
@@ -371,7 +371,7 @@ GReturn GalilController::setSpeed(long sp_axes[GALIL_NUM_AXES])
 } // GalilController::setSpeed
 
 
-GReturn GalilController::stopAxes(bool axes[GALIL_NUM_AXES])
+GReturn GalilController::stopAxes(const bool axes[GALIL_NUM_AXES])
 {
     std::string command = "ST ";
     
@@ -385,7 +385,7 @@ GReturn GalilController::stopAxes(bool axes[GALIL_NUM_AXES])
 } // GalilController::stopAxes
 
 
-GReturn GalilController::zeroAxes(bool axes[GALIL_NUM_AXES])
+GReturn GalilController::zeroAxes(const bool axes[GALIL_NUM_AXES])
 {
     std::string command = "DP ";
 
