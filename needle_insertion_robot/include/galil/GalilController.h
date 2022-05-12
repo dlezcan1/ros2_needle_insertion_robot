@@ -9,9 +9,16 @@
 #include <limits>
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 #define GALIL_BUFFER_SIZE G_SMALL_BUFFER
 #define GALIL_NUM_AXES 5
+
+#ifdef GALIL_DEBUG
+    #define GALIL_OUT(x) std::cout << "[GALIL-DEBUG]: " << x << std::endl;
+#else
+    #define GALIL_OUT(x)
+#endif
 
 // NULL AXES operations
 const long NULL_LONG_AXIS = std::numeric_limits<long>::lowest();

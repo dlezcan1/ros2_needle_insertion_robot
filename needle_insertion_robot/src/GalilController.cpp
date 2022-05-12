@@ -1,13 +1,6 @@
 #include "GalilController.h"
 
 #include <algorithm>
-#include <iostream>
-
-#ifdef GALIL_DEBUG
-    #define GALIL_OUT(x) cout << "[GALIL-DEBUG]: " << x << endl;
-#else
-    #define GALIL_OUT(x)
-#endif
 
 
 GalilController::GalilController(GCStringIn ipAddress)
@@ -265,26 +258,6 @@ long* GalilController::getPosition(bool axes[GALIL_NUM_AXES], bool absolute)
     for (int i = 0; i < GALIL_NUM_AXES; i++)
         positions[i] = NULL_LONG_AXIS; // initalize array
 
-    /*
-    char* token = strtok(response ,",");
-    int counter = 0;
-    while(token != NULL && counter < GALIL_NUM_AXES)
-    {
-        bool isnumeric = std::string(token).find_first_not_of("0123456789") == std::string::npos;
-        std::cout << "Token = " << token << " | isnumeric = " << isnumeric << std::endl;
-        if (isnumeric && axes[counter])
-            positions[counter++] = std::stol(token);
-        
-        else
-            counter++; // just increment the counter
-        
-        
-        token = strtok(NULL, ",");
-
-        std::cout << "positions[" << counter-1 << "] = " << positions[counter-1] << std::endl;
-        
-    } // while
-    */
     std::string token;
     s_response += ","; // add-on to end to get last part
     std::size_t pos = 0;
