@@ -20,6 +20,16 @@
 // #include "galil/NeedleInsertionRobot.h"
 #include "needle_insertion_robot/insertion_robot_node.hpp"
 
+// /* Static Value References */
+// const float NeedleInsertionRobot::s_default_speed[ROBOT_NUM_AXES];
+// const float NeedleInsertionRobot::s_default_acceleration[ROBOT_NUM_AXES];
+// const float NeedleInsertionRobot::s_default_deceleration[ROBOT_NUM_AXES];
+// const long NeedleInsertionRobot::s_default_kP[ROBOT_NUM_AXES];
+// const long NeedleInsertionRobot::s_default_kI[ROBOT_NUM_AXES];
+// const long NeedleInsertionRobot::s_default_kD[ROBOT_NUM_AXES];
+// const bool NeedleInsertionRobot::s_axes[GALIL_NUM_AXES];
+// const float NeedleInsertionRobot::s_countsPerDistance[ROBOT_NUM_AXES];
+
 // helpful macros
 #define ROBOT_BIND_AXIS_CMD_CB(msg_t, x, axis, absolute) (std::function<void(const msg_t)>) std::bind(&NeedleInsertionRobotNode::x, this, axis, std::placeholders::_1, absolute)
 #define ROBOT_BIND_FN(x) std::bind(&NeedleInsertionRobotNode::x, this, std::placeholders::_1)

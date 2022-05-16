@@ -27,26 +27,13 @@ find_package(rcl_interfaces REQUIRED)
 # setup custom libraries
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
-# add Galil Library
-add_library(galil_controller SHARED 
-            include/galil/gclib.h include/galil/gclibo.h include/galil/gclib_errors.h include/galil/gclib_record.h
-            src/GalilController.cpp include/galil/GalilController.h
-            src/NeedleInsertionRobot.cpp include/galil/NeedleInsertionRobot.h
-)
-target_include_directories(galil_controller PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/galil include/gclib)
-target_link_libraries(galil_controller PUBLIC gclib gclibo)
-ament_export_targets(galil_controller HAS_LIBRARY_TARGET)
-
-
-
 # setup node executable
-# add_definitions(-DGALIL_DEBUG) # uncomment if you want to see streamed Galil commands
-add_executable(insertion_robot_node src/insertion_robot_node.cpp)
-target_link_libraries(insertion_robot_node galil_controller)
+add_executable(insertion_robot_node src/insertion_robot_node.cpp src/NeedleInsertionRobot.cpp src/GalilController.cpp)
+target_link_libraries(insertion_robot_node gclib gclibo)
 target_include_directories(insertion_robot_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-# target_include_directories(insertion_robot_node PUBLIC include/gclib) 
+target_include_directories(insertion_robot_node PUBLIC include/gclib) 
 ament_target_dependencies(
     insertion_robot_node
     "rclcpp"
@@ -56,7 +43,7 @@ ament_target_dependencies(
     "rcl_interfaces"
 )
 
-install(TARGETS insertion_robot_node galil_controller
+install(TARGETS insertion_robot_node
   DESTINATION lib/${PROJECT_NAME})
 
 # launch files
@@ -82,12 +69,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_include_directories(
- include
-)
-
-# ament_export_libraries(
-#   galil_controller
+# ament_export_include_directories(
+#  include
 # )
 
 ament_package()

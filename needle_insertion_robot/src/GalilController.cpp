@@ -1,4 +1,4 @@
-#include "GalilController.h"
+#include "galil/GalilController.h"
 
 #include <algorithm>
 
@@ -56,7 +56,7 @@ GCStringOut GalilController::motionComplete()
     
 } // GalilController:: motionComplete
 
-GReturn GalilController::motorsOn(const const bool axes[GALIL_NUM_AXES])
+GReturn GalilController::motorsOn(const bool axes[GALIL_NUM_AXES])
 {
     bool any_on = false;
     std::string command = "SH ";

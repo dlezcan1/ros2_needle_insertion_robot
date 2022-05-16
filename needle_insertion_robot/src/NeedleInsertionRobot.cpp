@@ -5,7 +5,7 @@
 //  Created by Dimitri Lezcano on 3/4/22.
 //
 
-#include "NeedleInsertionRobot.h"
+#include "galil/NeedleInsertionRobot.h"
 #include <iostream>
 
 /* Static Value References */
