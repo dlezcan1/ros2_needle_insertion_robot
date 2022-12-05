@@ -1,0 +1,261 @@
+<?xml version="1.0"?>
+
+<robot name="insertion_robot">
+  <link name="world" />
+
+  <!--joint between Linear Stage and Needle base-->
+  <joint name="base_fixed_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+  
+  <!--link for robot base-->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.15 0.05"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.15 0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!--joint between robot base and X-axis-->
+  <joint name="base_to_x_axis_joint" type="prismatic">
+    <parent link="base_link"/>
+    <child link="x_axis_link"/>
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
+    <axis xyz="1 0 0" />
+  </joint>
+
+  <!--link for X-axis-->
+  <link name="x_axis_link">
+    <visual>
+      <origin xyz="0 0 1"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 1"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 1"/>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!--joint between X-axis and Y-axis-->
+  <joint name="x_axis_to_y_axis_joint" type="prismatic">
+    <parent link="x_axis_link"/>
+    <child link="y_axis_link"/>
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
+    <axis xyz="0 1 0" />
+  </joint>
+
+  <!--link for Y-axis-->
+  <link name="y_axis_link">
+    <visual>
+       <origin xyz="0 0 2"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 2"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 2"/>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!--joint between Y-axis and Z-axis-->
+  <joint name="y_axis_to_z_axis_joint" type="prismatic">
+    <parent link="y_axis_link"/>
+    <child link="z_axis_link"/>
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!--link for Z-axis-->
+  <link name="z_axis_link">
+    <visual>
+      <origin xyz="0 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!--joint between Z-axis and Linear Stage-->
+  <joint name="z_axis_to_linear_stage_joint" type="prismatic">
+    <parent link="z_axis_link"/>
+    <child link="linear_stage_link"/>
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
+    <axis xyz="1 0 0" />
+  </joint>
+
+  <!--link for Linear Stage-->
+  <link name="linear_stage_link">
+    <visual>
+      <origin xyz="1 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="1 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="1 0 3"/>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!--joint between Linear Stage and Needle base-->
+  <joint name="linear_stage_to_needle_base_joint" type="fixed">
+    <parent link="linear_stage_link"/>
+    <child link="needle_base_link"/>
+  </joint>
+
+  <!--link for Needle base/hub-->
+  <link name="needle_base_link">
+    <visual>
+      <origin xyz="2 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="2 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2 0 3"/>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!--joint between Needle base and Sensorized Needle-->
+  <joint name="needle_base_to_needle_joint" type="fixed">  <!--fixed for now because it is manually controlled in reality-->
+    <parent link="needle_base_link"/>
+    <child link="needle_link"/>
+    <limit effort="1000.0" lower="-1.57079" upper="1.57079" velocity="0.5"/>
+    <axis xyz="1 0 0" />
+  </joint>
+
+  <!--link for Needle-->
+  <link name="needle_link">
+    <visual>
+      <origin xyz="3 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="3 0 3"/>
+      <geometry>
+        <box size="0.6 0.1 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="3 0 3"/>
+      <mass value="1"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+
+  
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>fake_components/GenericSystem</plugin>
+    </hardware>
+    <joint name="base_to_x_axis_joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">1.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="x_axis_to_y_axis_joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">1.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="y_axis_to_z_axis_joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">1.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="z_axis_to_linear_stage_joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">1.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+<gazebo>
+  <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+    <robotNamespace></robotNamespace>
+    <robot_param>robot_description</robot_param>
+    <robot_param_node>robot_state_publisher</robot_param_node>
+    <parameters>$(find insertion_robot_description)/controller/insertion_robot_controller.yaml</parameters>
+  </plugin>
+</gazebo>
+
+</robot>

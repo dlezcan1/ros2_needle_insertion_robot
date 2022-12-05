@@ -9,7 +9,7 @@ GalilController::GalilController(GCStringIn ipAddress)
     {
         e(GOpen(ipAddress, &m_gc)); // open the connection
     } // try
-    catch (std::exception e)
+    catch (int e)
     {
         GALIL_OUT("Galil connection Error at " << ipAddress);
         throw e;

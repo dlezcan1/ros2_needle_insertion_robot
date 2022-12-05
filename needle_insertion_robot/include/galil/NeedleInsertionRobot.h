@@ -166,9 +166,9 @@ public:
 public: // static defaults
     /* Speed defaults */
     constexpr static const float s_default_speed[ROBOT_NUM_AXES]        = {2.5, 2.5, 2.5, 2.0}; // speeds per mm
-    constexpr static const float s_default_acceleration[ROBOT_NUM_AXES] = {1.5, 1.5, 1.5, 10000.0/43680.0};
-    constexpr static const float s_default_deceleration[ROBOT_NUM_AXES] = {1.5, 1.5, 1.5, 10000.0/43680.0};
-    constexpr static const float s_countsPerDistance[ROBOT_NUM_AXES] = {2000.0, 2000.0, 2000.0, 43680.0}; // calibrated counts/mm
+    constexpr static const float s_default_acceleration[ROBOT_NUM_AXES] = {1.5, 1.5, 1.5, 10000.0/86265.0};
+    constexpr static const float s_default_deceleration[ROBOT_NUM_AXES] = {1.5, 1.5, 1.5, 10000.0/86265.0};
+    constexpr static const float s_countsPerDistance[ROBOT_NUM_AXES] = {2000.0, 2000.0, 2000.0, 86265.0}; // calibrated counts/mm
     
     /* PID defaults*/
     constexpr static const long s_default_kP[ROBOT_NUM_AXES] = { 54,  15,  54,  25};

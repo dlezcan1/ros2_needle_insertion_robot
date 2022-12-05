@@ -48,7 +48,15 @@ NeedleInsertionRobotNode::NeedleInsertionRobotNode(const std::string& name)
     
     // initialize the robot
     RCLCPP_INFO(this->get_logger(), "Connecting to Robot at IP Address: %s", ip_address.c_str());
-    m_robot = std::make_shared<NeedleInsertionRobot>(ip_address.c_str());
+    try
+    {
+        m_robot = std::make_shared<NeedleInsertionRobot>(ip_address.c_str());
+    } catch (int ec)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Error connecting to robot with error code: %d", ec);
+        // this->destroy_node();
+        rclcpp::shutdown();
+    } 
     RCLCPP_INFO(this->get_logger(), "Connection established.");
     m_robot->allMotorsOff();
     
