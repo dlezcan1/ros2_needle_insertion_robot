@@ -13,6 +13,7 @@
 
 #define GALIL_BUFFER_SIZE G_SMALL_BUFFER
 #define GALIL_NUM_AXES 5
+// #define GALIL_DEBUG
 
 #ifdef GALIL_DEBUG
     #define GALIL_OUT(x) std::cout << "[GALIL-DEBUG]: " << x << std::endl;

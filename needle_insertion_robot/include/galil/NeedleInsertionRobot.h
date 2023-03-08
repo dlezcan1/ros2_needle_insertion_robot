@@ -171,9 +171,9 @@ public: // static defaults
     constexpr static const float s_countsPerDistance[ROBOT_NUM_AXES] = {2000.0, 2000.0, 2000.0, 86265.0}; // calibrated counts/mm
     
     /* PID defaults*/
-    constexpr static const long s_default_kP[ROBOT_NUM_AXES] = { 54,  15,  54,  25};
+    constexpr static const long s_default_kP[ROBOT_NUM_AXES] = { 54,  54,  54,  25};
     constexpr static const long s_default_kI[ROBOT_NUM_AXES] = {  4,   4,   4,   4};
-    constexpr static const long s_default_kD[ROBOT_NUM_AXES] = {480, 332, 480, 480};
+    constexpr static const long s_default_kD[ROBOT_NUM_AXES] = {480, 480, 480, 480};
 
     /* Axes defaults */
     constexpr static const bool s_axes[GALIL_NUM_AXES] = {false, true, true, true, true}; // Galil axes that are turned on
@@ -192,7 +192,7 @@ protected: // protected members
     const static size_t m_xIdx  = 1; // B: x axis
     const static size_t m_yIdx  = 2; // C: y axis
     const static size_t m_zIdx  = 3; // D: z axis
-    const static size_t m_lsIdx = 4; // E: linear stage axis
+    const static size_t m_lsIdx = 0; // A: linear stage axis
     
 
 protected: // protected fnctions
