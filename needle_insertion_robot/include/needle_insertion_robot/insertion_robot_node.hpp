@@ -17,7 +17,7 @@
 #include "std_srvs/srv/trigger.hpp"
 
 // custom headers
-#include "galil/NeedleInsertionRobot.h"
+#include "galil/NeedleInsertionRobot.hpp"
 
 const float RobotLimit::MIN, RobotLimit::MAX;
 

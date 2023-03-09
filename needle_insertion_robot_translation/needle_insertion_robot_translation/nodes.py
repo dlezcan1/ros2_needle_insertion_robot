@@ -55,9 +55,9 @@ class CoordinateConversions:
     @staticmethod
     def RobotToStage(x_r, y_r, z_r):
         """ Convert robot coordinates to the stage coordinates """
-        x_s = -y_r * 1e-3 # convert mm -> m
-        y_s =  x_r * 1e-3 # convert mm -> m
-        z_s =  z_r * 1e-3 # convert mm -> m
+        x_s =  y_r # * 1e-3 # convert mm -> m
+        y_s =  z_r # * 1e-3 # convert mm -> m
+        z_s =  x_r # * 1e-3 # convert mm -> m
 
         return x_s, y_s, z_s
 
@@ -66,9 +66,9 @@ class CoordinateConversions:
     @staticmethod
     def StageToRobot(x_s, y_s, z_s):
         """ Convert Stage to Robot Coordinates """
-        x_r =  y_s * 1e3 # convert m -> mm
-        y_r = -x_s * 1e3 # convert m -> mm
-        z_r = -z_s * 1e3 # convert m -> mm
+        x_r =  z_s # * 1e3 # convert m -> mm
+        y_r =  x_s # * 1e3 # convert m -> mm
+        z_r =  y_s # * 1e3 # convert m -> mm
 
         return x_r, y_r, z_r
 
@@ -311,8 +311,8 @@ class NeedleInsertionRobotTranslationNode(Node):
 
         msg.pose.orientation.w = 0.0
         msg.pose.orientation.x = 0.0
-        msg.pose.orientation.y = 0.0 # axis to rotate needle axis
-        msg.pose.orientation.z = 0.0
+        msg.pose.orientation.y = 0.0 
+        msg.pose.orientation.z = 0.0 # axis to rotate needle axis
 
         # publish the message
         self.pub_needlepose.publish( msg )
