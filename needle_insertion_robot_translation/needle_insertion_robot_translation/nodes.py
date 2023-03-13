@@ -1,8 +1,9 @@
 # standard libraries
 from functools import partial
-from math import sqrt
+import math
 import asyncio
 import time
+
 
 # ros2 libraries
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
@@ -126,42 +127,51 @@ class NeedleInsertionRobotActionServer(Node):
         self.get_logger().info(f"Executing goal to axis: x={goal_handle.request.x} m, z={goal_handle.request.z} m...")
 
         # create lambda error function
-        compute_error = lambda current_x, current_z: sqrt( (current_x - goal_handle.request.x)**2 + (current_z - goal_handle.request.z)**2 )
+        compute_error = lambda current_x, current_y, current_z, current_ls: math.sqrt( 
+            abs(current_x - goal_handle.request.x)
+            + abs(current_y - goal_handle.request.y)
+            + abs(current_z - goal_handle.request.z)
+            + abs(current_ls - goal_handle.request.ls)
+        )
         
         self.actionsrv_translation_running = True  # action server is running
 
         feedback_msg = MoveStage.Feedback()
         
-        # command the robot to goal position ( convert m -> mm )
-        _, current_y_r, current_z_r = self.get_robotCoordinates()
-        _, desired_y_r, desired_z_r = CoordinateConversions.StageToRobot(goal_handle.request.x, 0, goal_handle.request.z)
-        self.pub_robot_axisCommand_y.publish( Float32( data=desired_y_r - current_y_r ) ) # command y-axis
-        self.pub_robot_axisCommand_z.publish( Float32( data=desired_z_r - current_z_r ) ) # command z-axis 
+        # command the robot to goal position
+
+        desired_x, desired_y, desired_z, desired_ls = goal_handle.request.x, goal_handle.request.y, goal_handle.request.z, goal_handle.request.linear_stage
+        self.pub_robot_axisCommand_x.publish( Float32( data=desired_x ) )   # command x-axis
+        self.pub_robot_axisCommand_y.publish( Float32( data=desired_y ) )   # command y-axis
+        self.pub_robot_axisCommand_z.publish( Float32( data=desired_z ) )   # command z-axis
+        self.pub_robot_axisCommand_ls.publish( Float32( data=desired_ls ) ) # command linear stage-axis 
         
         time.sleep(0.5)
 
          # provide feedback
-        while self.robot_axisMoving[1] or self.robot_axisMoving[2]: # check if axis Y or Z are moving
+        while any(self.robot_axisMoving): # check if any axis is moving
             if goal_handle.is_cancel_requested:
                 goal_handle.canceled()
 
                 # setup the result
-                result_msg = MoveStage.Result()
-                current_x_s, _, current_z_s = self.get_stageCoordinates()
-                result_msg.x = float( current_x_s ) # robot y-axis
-                result_msg.z = float( current_z_s ) # robot z-axis
-                result_msg.error = compute_error( result_msg.x, result_msg.z )
+                result_msg              = MoveStage.Result()
+                result_msg.x            = float( self.robot_axisPositions[0] )
+                result_msg.y            = float( self.robot_axisPositions[1] )
+                result_msg.z            = float( self.robot_axisPositions[2] )
+                result_msg.linear_stage = float( self.robot_axisPositions[3] )
+                result_msg.error        = compute_error( result_msg.x, result_msg.y, result_msg.z, result_msg.linear_stage )
 
                 return result_msg
 
             # if 
 
-            current_x_s, _, current_z_s = self.get_stageCoordinates()
-            feedback_msg.x = float( current_x_s ) # robot y-axis
-            feedback_msg.z = float( current_z_s ) # robot z-axis
-            time_now = self.get_clock().now().seconds_nanoseconds()
-            feedback_msg.time = float( time_now[0]*1e9 + time_now[1] )
-            feedback_msg.error = compute_error(feedback_msg.x, feedback_msg.z)
+            feedback_msg.x            = float( self.robot_axisPositions[0] )
+            feedback_msg.y            = float( self.robot_axisPositions[1] )
+            feedback_msg.z            = float( self.robot_axisPositions[2] )
+            feedback_msg.linear_stage = float( self.robot_axisPositions[3] )
+            time_now                  = self.get_clock().now().seconds_nanoseconds()
+            feedback_msg.time         = float( time_now[0]*1e9 + time_now[1] )
+            feedback_msg.error        = compute_error(feedback_msg.x, feedback_msg.y, feedback_msg.z, feedback_msg.linear_stage)
         
             goal_handle.publish_feedback(feedback_msg)
             self.get_logger().info(f"Publishing feedback: x: {feedback_msg.x} m, z: {feedback_msg.z} m, error {feedback_msg.error} m ")
@@ -169,11 +179,12 @@ class NeedleInsertionRobotActionServer(Node):
         # while
 
         # setup the result
-        result_msg = MoveStage.Result()
-        current_x_s, _, current_z_s = self.get_stageCoordinates()
-        result_msg.x = float( current_x_s ) # robot y-axis
-        result_msg.z = float( current_z_s ) # robot z-axis
-        result_msg.error = compute_error( result_msg.x, result_msg.z )
+        result_msg              = MoveStage.Result()
+        result_msg.x            = float( self.robot_axisPositions[0] )
+        result_msg.y            = float( self.robot_axisPositions[1] )
+        result_msg.z            = float( self.robot_axisPositions[2] )
+        result_msg.linear_stage = float( self.robot_axisPositions[3] )
+        result_msg.error        = compute_error( result_msg.x, result_msg.y, result_msg.z, result_msg.linear_stage )
 
         self.actionsrv_translation_running = False # action server finished
         self.get_logger().info(f"Finished execution with following: x={result_msg.x} m, z={result_msg.z} m, error={result_msg.error} m")
