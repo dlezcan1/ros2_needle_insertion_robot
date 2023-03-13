@@ -6,6 +6,7 @@ import time
 
 
 # ros2 libraries
+import rclpy
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.action.server import ServerGoalHandle
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
@@ -76,7 +77,48 @@ class CoordinateConversions:
     # StageToRobot
 
 
-# class: CoordinateConversions
+# class: 
+
+class NeedleInsertionRobotAxisMoving(Node):
+    def __init__( self, name = "NeedleInsertionRobotAxisMovingNode", ns: str = "" ):
+        super().__init__(name)
+
+        self.robot_axisMoving = [ False, False, False, False ]
+        
+        self.sub_robot_axisMoving_x  = self.create_subscription(
+            Bool,
+            "axis/moving/x",
+            lambda msg: self.sub_axisMoving_callback(msg, axis=0),
+            10,
+        )
+        self.sub_robot_axisMoving_y  = self.create_subscription(
+            Bool,
+            "axis/moving/y",
+            lambda msg: self.sub_axisMoving_callback(msg, axis=1),
+            10,
+        )
+        self.sub_robot_axisMoving_z  = self.create_subscription(
+            Bool,
+            "axis/moving/z",
+            lambda msg: self.sub_axisMoving_callback(msg, axis=2),
+            10,
+        )
+        self.sub_robot_axisMoving_ls = self.create_subscription(
+            Bool,
+            "axis/moving/linear_stage",
+            lambda msg: self.sub_axisMoving_callback(msg, axis=3),
+            10,
+        )
+
+    # __init__
+
+    def sub_axisMoving_callback(self, msg: Bool, axis: int):
+        self.robot_axisMoving[axis] = msg.data
+
+    # sub_axisMoving_callback
+
+# class: NeedleInsertionRobotAxisMoving
+
 
 class NeedleInsertionRobotActionServer(Node):
     def __init__(self, name = "NeedleInsertionRobotActionServerNode" ):
@@ -86,7 +128,6 @@ class NeedleInsertionRobotActionServer(Node):
         self.actionsrv_translation_running = False
         # - stored robot states
         self.robot_axisPositions = [   0.0,   0.0,   0.0,   0.0 ] # current robot axis positions
-        self.robot_axisMoving    = [ False, False, False, False ] # whether the robot is moving or not
 
         # publishers
         # - robot command
@@ -96,7 +137,7 @@ class NeedleInsertionRobotActionServer(Node):
         self.pub_robot_axisCommand_ls = self.create_publisher( Float32, "axis/command/linear_stage", 1 )
 
         # clients
-        self.cli_robot_abort         = self.create_client( Trigger, "abort" )
+        self.cli_robot_abort          = self.create_client( Trigger, "abort" )
 
         # action servers
         self.actionsrv_translation = ActionServer(self, MoveStage, "move_stage",
@@ -105,11 +146,21 @@ class NeedleInsertionRobotActionServer(Node):
                                                   goal_callback    = self.action_translation_goal_callback,
                                                   cancel_callback  = self.action_translation_cancel_callback
                                                 )
+        # subscribers
+        # - helper robot axis moving node
+        self._robot_axisMoving_node = NeedleInsertionRobotAxisMoving(
+            f"{self.get_name}-Helper",
+            ns=self.get_namespace()
+        )
 
         # inform node is running
         self.get_logger().info("Running needle insertion robot action server.")
         
     # __init__
+
+    @property
+    def robot_axisMoving(self):
+        return self._robot_axisMoving_node.robot_axisMoving
 
     def action_translation_cancel_callback( self, goal_handle: ServerGoalHandle ):
         """ Cancel the current action """
@@ -139,7 +190,6 @@ class NeedleInsertionRobotActionServer(Node):
         feedback_msg = MoveStage.Feedback()
         
         # command the robot to goal position
-
         desired_x, desired_y, desired_z, desired_ls = goal_handle.request.x, goal_handle.request.y, goal_handle.request.z, goal_handle.request.linear_stage
         self.pub_robot_axisCommand_x.publish( Float32( data=desired_x ) )   # command x-axis
         self.pub_robot_axisCommand_y.publish( Float32( data=desired_y ) )   # command y-axis
@@ -147,6 +197,7 @@ class NeedleInsertionRobotActionServer(Node):
         self.pub_robot_axisCommand_ls.publish( Float32( data=desired_ls ) ) # command linear stage-axis 
         
         time.sleep(0.5)
+        rclpy.spin_once(self._robot_axisMoving_node)
 
          # provide feedback
         while any(self.robot_axisMoving): # check if any axis is moving
@@ -175,6 +226,7 @@ class NeedleInsertionRobotActionServer(Node):
         
             goal_handle.publish_feedback(feedback_msg)
             self.get_logger().info(f"Publishing feedback: x: {feedback_msg.x} m, z: {feedback_msg.z} m, error {feedback_msg.error} m ")
+            rclpy.spin_once(self._robot_axisMoving_node)
 
         # while
 
