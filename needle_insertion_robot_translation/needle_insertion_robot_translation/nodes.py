@@ -175,31 +175,38 @@ class NeedleInsertionRobotActionServer(Node):
 
     async def action_translation_execute_callback( self, goal_handle: ServerGoalHandle ) :
         """ Handle the goal """
-        self.get_logger().info(f"Executing goal to axis: x={goal_handle.request.x} m, z={goal_handle.request.z} m...")
+        self.get_logger().info(
+            f"Executing goal to axis: "
+            f"x={goal_handle.request.x} mm, "
+            f"y={goal_handle.request.y} mm, "
+            f"z={goal_handle.request.z} mm, "
+            f"ls={goal_handle.request.linear_stage} mm..."
+        )
 
         # create lambda error function
         compute_error = lambda current_x, current_y, current_z, current_ls: math.sqrt( 
-            abs(current_x - goal_handle.request.x)
-            + abs(current_y - goal_handle.request.y)
-            + abs(current_z - goal_handle.request.z)
-            + abs(current_ls - goal_handle.request.ls)
+            abs(current_x - goal_handle.request.x) * float(goal_handle.request.move_x)
+            + abs(current_y - goal_handle.request.y) * float(goal_handle.request.move_y)
+            + abs(current_z - goal_handle.request.z) * float(goal_handle.request.move_z)
+            + abs(current_ls - goal_handle.request.linear_stage) * float(goal_handle.request.move_linear_stage)
         )
         
-        self.actionsrv_translation_running = True  # action server is running
-
-        feedback_msg = MoveStage.Feedback()
-        
         # command the robot to goal position
-        desired_x, desired_y, desired_z, desired_ls = goal_handle.request.x, goal_handle.request.y, goal_handle.request.z, goal_handle.request.linear_stage
-        self.pub_robot_axisCommand_x.publish( Float32( data=desired_x ) )   # command x-axis
-        self.pub_robot_axisCommand_y.publish( Float32( data=desired_y ) )   # command y-axis
-        self.pub_robot_axisCommand_z.publish( Float32( data=desired_z ) )   # command z-axis
-        self.pub_robot_axisCommand_ls.publish( Float32( data=desired_ls ) ) # command linear stage-axis 
+        self.actionsrv_translation_running = True  # action server is running
+        if goal_handle.request.move_x:
+            self.pub_robot_axisCommand_x.publish( Float32( data=goal_handle.request.x ) )   # command x-axis
+        if goal_handle.request.move_y:
+            self.pub_robot_axisCommand_y.publish( Float32( data=goal_handle.request.y ) )   # command y-axis
+        if goal_handle.request.move_z: 
+            self.pub_robot_axisCommand_z.publish( Float32( data=goal_handle.request.z ) )   # command z-axis
+        if goal_handle.request.move_linear_stage:
+            self.pub_robot_axisCommand_ls.publish( Float32( data=goal_handle.request.linear_stage ) ) # command linear stage-axis 
         
         time.sleep(0.5)
         rclpy.spin_once(self._robot_axisMoving_node)
 
          # provide feedback
+        feedback_msg = MoveStage.Feedback()
         while any(self.robot_axisMoving): # check if any axis is moving
             if goal_handle.is_cancel_requested:
                 goal_handle.canceled()
