@@ -131,10 +131,10 @@ class NeedleInsertionRobotActionServer(Node):
 
         # publishers
         # - robot command
-        self.pub_robot_axisCommand_x  = self.create_publisher( Float32, "axis/command/x",            1 )
-        self.pub_robot_axisCommand_y  = self.create_publisher( Float32, "axis/command/y",            1 )
-        self.pub_robot_axisCommand_z  = self.create_publisher( Float32, "axis/command/z",            1 )
-        self.pub_robot_axisCommand_ls = self.create_publisher( Float32, "axis/command/linear_stage", 1 )
+        self.pub_robot_axisCommand_x  = self.create_publisher( Float32, "axis/command/absolute/x",            1 )
+        self.pub_robot_axisCommand_y  = self.create_publisher( Float32, "axis/command/absolute/y",            1 )
+        self.pub_robot_axisCommand_z  = self.create_publisher( Float32, "axis/command/absolute/z",            1 )
+        self.pub_robot_axisCommand_ls = self.create_publisher( Float32, "axis/command/absolute/linear_stage", 1 )
 
         # clients
         self.cli_robot_abort          = self.create_client( Trigger, "abort" )
@@ -149,7 +149,7 @@ class NeedleInsertionRobotActionServer(Node):
         # subscribers
         # - helper robot axis moving node
         self._robot_axisMoving_node = NeedleInsertionRobotAxisMoving(
-            f"{self.get_name}-Helper",
+            f"{self.get_name()}_Helper",
             ns=self.get_namespace()
         )
 
@@ -203,7 +203,6 @@ class NeedleInsertionRobotActionServer(Node):
             self.pub_robot_axisCommand_ls.publish( Float32( data=goal_handle.request.linear_stage ) ) # command linear stage-axis 
         
         time.sleep(0.5)
-        rclpy.spin_once(self._robot_axisMoving_node)
 
          # provide feedback
         feedback_msg = MoveStage.Feedback()
@@ -232,8 +231,8 @@ class NeedleInsertionRobotActionServer(Node):
             feedback_msg.error        = compute_error(feedback_msg.x, feedback_msg.y, feedback_msg.z, feedback_msg.linear_stage)
         
             goal_handle.publish_feedback(feedback_msg)
-            self.get_logger().info(f"Publishing feedback: x: {feedback_msg.x} m, z: {feedback_msg.z} m, error {feedback_msg.error} m ")
-            rclpy.spin_once(self._robot_axisMoving_node)
+            self.get_logger().debug(f"Publishing feedback: x: {feedback_msg.x} m, z: {feedback_msg.z} m, error {feedback_msg.error} m ")
+            self.get_logger().debug(f"Robot axes moving: {self.robot_axisMoving}")
 
         # while
 
@@ -246,7 +245,6 @@ class NeedleInsertionRobotActionServer(Node):
         result_msg.error        = compute_error( result_msg.x, result_msg.y, result_msg.z, result_msg.linear_stage )
 
         self.actionsrv_translation_running = False # action server finished
-        self.get_logger().info(f"Finished execution with following: x={result_msg.x} m, z={result_msg.z} m, error={result_msg.error} m")
         
         if result_msg.error <= goal_handle.request.eps:
             goal_handle.succeed()
@@ -254,6 +252,7 @@ class NeedleInsertionRobotActionServer(Node):
         else: # only attempt one command
             goal_handle.abort()
             
+        self.get_logger().info(f"Finished execution with following: x={result_msg.x} m, z={result_msg.z} m, error={result_msg.error} m")
 
         return result_msg
 
@@ -271,6 +270,12 @@ class NeedleInsertionRobotActionServer(Node):
         return response
 
     # action_translation_goal_callback
+
+    def configure(self):
+        """ Configure the node """
+        self.executor.add_node(self._robot_axisMoving_node)
+
+    # configure
 
     def destroy_node( self ) -> bool:
         self.get_logger().info( "Shutting down needle insertion robot action server." )

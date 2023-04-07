@@ -26,6 +26,8 @@ def main(args=None):
     executor.add_node( action_server_node )
     executor.add_node( translation_node )
 
+    action_server_node.configure()
+
     # spin the executor
     try:
         executor.spin()
