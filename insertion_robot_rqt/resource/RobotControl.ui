@@ -48,6 +48,22 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
+       <widget class="QPushButton" name="pushButton_toggleX">
+        <property name="text">
+         <string>Toggle X</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
+        </property>
+        <property name="default">
+         <bool>false</bool>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton_toggleY">
         <property name="text">
          <string>Toggle Y</string>
@@ -109,6 +125,13 @@
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="pushButton_zeroX">
+        <property name="text">
+         <string>Zero X</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QPushButton" name="pushButton_zeroY">
         <property name="text">
@@ -175,37 +198,40 @@
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Y</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Z</string>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLCDNumber" name="lcdNumber_Y"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLCDNumber" name="lcdNumber_Z"/>
-      </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>LS</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QLCDNumber" name="lcdNumber_LS"/>
       </item>
-      <item row="0" column="2">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Z</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
        <widget class="QLabel" name="label_stateY">
         <property name="styleSheet">
          <string notr="true">background-color: red;
@@ -219,7 +245,7 @@ border:  1px solid black;</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
+      <item row="2" column="2">
        <widget class="QLabel" name="label_stateZ">
         <property name="styleSheet">
          <string notr="true">background-color: red;
@@ -230,7 +256,7 @@ border:  1px solid black;</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
+      <item row="3" column="2">
        <widget class="QLabel" name="label_stateLS">
         <property name="styleSheet">
          <string notr="true">background-color: red;
@@ -238,6 +264,39 @@ border:  1px solid black;</string>
         </property>
         <property name="text">
          <string>OFF</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLCDNumber" name="lcdNumber_Z"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLCDNumber" name="lcdNumber_Y"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>X</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLCDNumber" name="lcdNumber_X"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_stateX">
+        <property name="styleSheet">
+         <string notr="true">background-color: red;
+border:  1px solid black;</string>
+        </property>
+        <property name="text">
+         <string>OFF</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -277,135 +336,22 @@ border:  1px solid black;</string>
         <height>158</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0">
-       <item row="0" column="6">
-        <widget class="QPushButton" name="pushButton_relMoveY">
-         <property name="text">
-          <string>Move Y</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QSlider" name="horizontalSlider_relMoveZ">
-         <property name="minimum">
-          <number>-100</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="tickPosition">
-          <enum>QSlider::TicksAbove</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_relMoveZ_min">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
+      <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0">
        <item row="3" column="3">
-        <widget class="QLabel" name="label_relMoveLS_max">
-         <property name="text">
-          <string>100</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="4">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_relMoveLS_min">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="6">
-        <widget class="QPushButton" name="pushButton_relMoveLS">
-         <property name="text">
-          <string>Move LS</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="6">
-        <widget class="QPushButton" name="pushButton_relMoveZ">
-         <property name="text">
-          <string>Move Z</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_relMoveY_min">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
         <widget class="QLabel" name="label_relMoveZ_max">
          <property name="text">
           <string>100</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="label_relMoveY_max">
+       <item row="1" column="6">
+        <widget class="QPushButton" name="pushButton_relMoveY">
          <property name="text">
-          <string>100</string>
+          <string>Move Y</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="4">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QSlider" name="horizontalSlider_relMoveLS">
          <property name="minimum">
           <number>-100</number>
@@ -421,7 +367,27 @@ border:  1px solid black;</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="3" column="5">
+        <widget class="QLineEdit" name="lineedit_relMoveZ">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_relMoveLS_min">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
         <widget class="QSlider" name="horizontalSlider_relMoveY">
          <property name="tabletTracking">
           <bool>false</bool>
@@ -449,7 +415,23 @@ border:  1px solid black;</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
+       <item row="1" column="4">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="5">
         <widget class="QLineEdit" name="lineedit_relMoveY">
          <property name="maximumSize">
           <size>
@@ -462,8 +444,59 @@ border:  1px solid black;</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="5">
-        <widget class="QLineEdit" name="lineedit_relMoveZ">
+       <item row="1" column="3">
+        <widget class="QLabel" name="label_relMoveY_max">
+         <property name="text">
+          <string>100</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="4">
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="6">
+        <widget class="QPushButton" name="pushButton_relMoveLS">
+         <property name="text">
+          <string>Move LS</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="3">
+        <widget class="QLabel" name="label_relMoveLS_max">
+         <property name="text">
+          <string>100</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_relMoveZ_min">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_relMoveY_min">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="5">
+        <widget class="QLineEdit" name="lineedit_relMoveLS">
          <property name="maximumSize">
           <size>
            <width>50</width>
@@ -475,14 +508,118 @@ border:  1px solid black;</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="5">
-        <widget class="QLineEdit" name="lineedit_relMoveLS">
+       <item row="3" column="1">
+        <widget class="QSlider" name="horizontalSlider_relMoveZ">
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksAbove</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="6">
+        <widget class="QPushButton" name="pushButton_relMoveZ">
+         <property name="text">
+          <string>Move Z</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="4">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="6">
+        <widget class="QPushButton" name="pushButton_relMoveX">
+         <property name="text">
+          <string>Move X</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QLineEdit" name="lineedit_relMoveX">
          <property name="maximumSize">
           <size>
            <width>50</width>
            <height>16777215</height>
           </size>
          </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_relMoveX_max">
+         <property name="text">
+          <string>100</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSlider" name="horizontalSlider_relMoveX">
+         <property name="tabletTracking">
+          <bool>false</bool>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+         <property name="invertedControls">
+          <bool>false</bool>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksAbove</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_relMoveX_min">
          <property name="text">
           <string>0</string>
          </property>
@@ -513,8 +650,22 @@ border:  1px solid black;</string>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="3">
-        <spacer name="horizontalSpacer_4">
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_absMoveLS_min">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QPushButton" name="pushButton_absMoveZ">
+         <property name="text">
+          <string>Move Z</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <spacer name="horizontalSpacer_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -529,7 +680,14 @@ border:  1px solid black;</string>
          </property>
         </spacer>
        </item>
-       <item row="0" column="1">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_absMoveZ_min">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
         <widget class="QSlider" name="horizontalSlider_absMoveY">
          <property name="mouseTracking">
           <bool>true</bool>
@@ -548,37 +706,43 @@ border:  1px solid black;</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_absMoveLS_min">
+       <item row="3" column="5">
+        <widget class="QPushButton" name="pushButton_absMoveLS">
+         <property name="text">
+          <string>Move LS</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLineEdit" name="lineedit_absMoveZ">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_absMoveLS_max">
-         <property name="text">
-          <string>100</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QSlider" name="horizontalSlider_absMoveZ">
-         <property name="minimum">
-          <number>-100</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="tickPosition">
-          <enum>QSlider::TicksAbove</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
+       <item row="3" column="3">
         <spacer name="horizontalSpacer_6">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -594,58 +758,54 @@ border:  1px solid black;</string>
          </property>
         </spacer>
        </item>
-       <item row="2" column="5">
-        <widget class="QPushButton" name="pushButton_absMoveLS">
-         <property name="text">
-          <string>Move LS</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <spacer name="horizontalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="5">
-        <widget class="QPushButton" name="pushButton_absMoveZ">
-         <property name="text">
-          <string>Move Z</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_absMoveY_min">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_absMoveY_max">
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_absMoveZ_max">
          <property name="text">
           <string>100</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
+       <item row="1" column="4">
+        <widget class="QLineEdit" name="lineedit_absMoveY">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="5">
         <widget class="QPushButton" name="pushButton_absMoveY">
          <property name="text">
           <string>Move Y</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="4">
+        <widget class="QLineEdit" name="lineedit_absMoveLS">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="label_absMoveY_max">
+         <property name="text">
+          <string>100</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
         <widget class="QSlider" name="horizontalSlider_absMoveLS">
          <property name="minimum">
           <number>-100</number>
@@ -662,21 +822,44 @@ border:  1px solid black;</string>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_absMoveZ_min">
+        <widget class="QLabel" name="label_absMoveY_min">
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="label_absMoveZ_max">
+       <item row="2" column="1">
+        <widget class="QSlider" name="horizontalSlider_absMoveZ">
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksAbove</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLabel" name="label_absMoveLS_max">
          <property name="text">
           <string>100</string>
          </property>
         </widget>
        </item>
+       <item row="0" column="5">
+        <widget class="QPushButton" name="pushButton_absMoveX">
+         <property name="text">
+          <string>Move X</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="4">
-        <widget class="QLineEdit" name="lineedit_absMoveY">
+        <widget class="QLineEdit" name="lineedit_absMoveX">
          <property name="maximumSize">
           <size>
            <width>50</width>
@@ -688,27 +871,50 @@ border:  1px solid black;</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="4">
-        <widget class="QLineEdit" name="lineedit_absMoveZ">
-         <property name="maximumSize">
+       <item row="0" column="3">
+        <spacer name="horizontalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>50</width>
-           <height>16777215</height>
+           <width>20</width>
+           <height>20</height>
           </size>
          </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_absMoveX_max">
          <property name="text">
-          <string>0</string>
+          <string>100</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="4">
-        <widget class="QLineEdit" name="lineedit_absMoveLS">
-         <property name="maximumSize">
-          <size>
-           <width>50</width>
-           <height>16777215</height>
-          </size>
+       <item row="0" column="1">
+        <widget class="QSlider" name="horizontalSlider_absMoveX">
+         <property name="mouseTracking">
+          <bool>true</bool>
          </property>
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksAbove</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_absMoveX_min">
          <property name="text">
           <string>0</string>
          </property>
