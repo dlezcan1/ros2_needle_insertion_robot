@@ -39,7 +39,7 @@ class RobotControlWidget(QWidget):
         loadUi(ui_file, self)
 
         # "Initialize" and "State" functionality implementation
-        self.pushButton_toggleY.clicked.connect(lambda: self.pushButton_srv_event("/stage/axis/state/toggle/x"))
+        self.pushButton_toggleX.clicked.connect(lambda: self.pushButton_srv_event("/stage/axis/state/toggle/x"))
         self.pushButton_toggleY.clicked.connect(lambda: self.pushButton_srv_event("/stage/axis/state/toggle/y"))
         self.pushButton_toggleZ.clicked.connect(lambda: self.pushButton_srv_event("/stage/axis/state/toggle/z"))
         self.pushButton_toggleLS.clicked.connect(lambda: self.pushButton_srv_event("/stage/axis/state/toggle/linear_stage"))
